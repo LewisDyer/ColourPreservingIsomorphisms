@@ -147,9 +147,11 @@ int main(int, char*[])
     graph_attr["ratio"] = "fill";
     vertex_attr["shape"] = "circle";
 
-    boost::write_graphviz(std::cout, g, make_label_writer(name),
+    std::ofstream dot_file;
+    dot_file.open("tour_dot.dot");
+    boost::write_graphviz(dot_file, g, make_label_writer(name),
         make_label_writer(trans_delay),
         make_graph_attributes_writer(graph_attr, vertex_attr, edge_attr));
-
+    dot_file.close();
     return 0;
 }
