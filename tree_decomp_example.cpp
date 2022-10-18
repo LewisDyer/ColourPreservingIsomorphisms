@@ -20,40 +20,86 @@ using Graph_vertex_size_type = Graph_traits::vertices_size_type;
 using Decomposition_bags_map = std::map<Graph_vertex, std::set<Graph_vertex>>;
 using Decomposition_bags = associative_property_map<Decomposition_bags_map>;
 
+template <class G, class PM>
+// Helper function to save graph to file from https://github.com/Cynt3r/boost-treewidth
+void save_graph(std::string filename, G & g, PM & pm) {
+	std::ofstream file;
+  	file.open(filename);
+  	boost::write_graphviz(file, g, make_label_writer(pm));
+  	file.close();
+}
+
+template <class G>
+// Same helper function but with default labels
+void save_graph(std::string filename, G & g) {
+	std::ofstream file;
+  	file.open(filename);
+  	boost::write_graphviz(file, g);
+  	file.close();
+}
+
+namespace std {
+	template <class T>
+    // Function to print out a set
+	std::ostream& operator<< (std::ostream& os, const std::set<T> & in) {
+		os << "[";
+		for (auto it = in.begin(); it != in.end(); it++) {
+            if (it != in.begin()) os << ",";
+            os << *it;
+        }
+        os << "]";
+
+		return os;
+	}
+}
+
 int main() {
     Graph path = Graph(10);
 
-    for(int i=0; i < 8; i++) {
+    for(int i=0; i < 9; i++) {
         add_edge(i, i+1, path);
     }
 
+
+    save_graph("path.dot", path);
     // std::ofstream path_graph;
     // path_graph.open("path.dot");
     // write_graphviz(path_graph, path);
     // path_graph.close();
 
-    Decomposition_bags_map bm;
-    Decomposition_bags b(bm);
+    Decomposition_bags_map bags_m;
+    Decomposition_bags bags_pm(bags_m);
 
     Graph dec_path;
 
-    bool x = tree_decomposition(path, dec_path, b, (-0.75));
+    bool x = tree_decomposition(path, dec_path, bags_pm, (-0.75));
+
+    save_graph("path_dec.dot", dec_path, bags_pm);
 
     std::cout << "this has been updated\n";
 
     for(int i=0; i < 10; i++) {
-        std::cout << "{";
-        std::set<Graph_vertex> current_bag = get(b,i);
-        for (auto const &item: current_bag) {
-            std::cout << item << " ";
-        }
-        std::cout << "}\n";
+        std::cout << get(bags_pm,i) << "\n";
     }
 
-    std::ofstream path_dec;
-    path_dec.open("path_dec.dot");
-    boost::write_graphviz(path_dec, dec_path);
-    path_dec.close();
+    std::cout << "======";
+
+    Graph nice_path;
+    Decomposition_bags_map nice_bags_m;
+    Decomposition_bags nice_bags_pm(nice_bags_m);
+
+    Graph_vertex root = boost::nice_tree_decomposition(dec_path, bags_pm, nice_path, nice_bags_pm);
+
+    save_graph("nice_path.dot", nice_path, nice_bags_pm);
+
+    for(int i=0; i < 10; i++) {
+        std::cout << get(nice_bags_pm,i) << "\n";
+    }    
+
+    // std::ofstream path_dec;
+    // path_dec.open("path_dec.dot");
+    // boost::write_graphviz(path_dec, dec_path);
+    // path_dec.close();
 
 
 }
