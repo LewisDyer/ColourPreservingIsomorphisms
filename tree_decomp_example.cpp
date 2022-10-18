@@ -53,6 +53,12 @@ namespace std {
 	}
 }
 
+void output_bags(Graph G, Decomposition_bags bags_pm) {
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        std::cout << i << ": " << get(bags_pm,i) << "\n";
+    }
+}
+
 int main() {
     Graph path = Graph(10);
 
@@ -62,10 +68,6 @@ int main() {
 
 
     save_graph("path.dot", path);
-    // std::ofstream path_graph;
-    // path_graph.open("path.dot");
-    // write_graphviz(path_graph, path);
-    // path_graph.close();
 
     Decomposition_bags_map bags_m;
     Decomposition_bags bags_pm(bags_m);
@@ -78,11 +80,9 @@ int main() {
 
     std::cout << "this has been updated\n";
 
-    for(int i=0; i < 10; i++) {
-        std::cout << get(bags_pm,i) << "\n";
-    }
+    output_bags(dec_path, bags_pm);    
 
-    std::cout << "======";
+    std::cout << "======\n";
 
     Graph nice_path;
     Decomposition_bags_map nice_bags_m;
@@ -92,15 +92,7 @@ int main() {
 
     save_graph("nice_path.dot", nice_path, nice_bags_pm);
 
-    for(int i=0; i < 10; i++) {
-        std::cout << get(nice_bags_pm,i) << "\n";
-    }    
-
-    // std::ofstream path_dec;
-    // path_dec.open("path_dec.dot");
-    // boost::write_graphviz(path_dec, dec_path);
-    // path_dec.close();
-
+    output_bags(nice_path, nice_bags_pm);
 
 }
 
