@@ -55,7 +55,7 @@ namespace std {
 
 void output_bags(Graph G, Decomposition_bags bags_pm) {
     for(int i=0; i < boost::num_vertices(G); i++) {
-        std::cout << i << ": " << get(bags_pm,i) << "\n";
+        std::cout << i << ": " << bags_pm[i] << "\n";
     }
 }
 
@@ -91,7 +91,6 @@ int main() {
     Graph_vertex root = boost::nice_tree_decomposition(dec_path, bags_pm, nice_path, nice_bags_pm);
 
     save_graph("nice_path.dot", nice_path, nice_bags_pm);
-
     output_bags(nice_path, nice_bags_pm);
 
 }
