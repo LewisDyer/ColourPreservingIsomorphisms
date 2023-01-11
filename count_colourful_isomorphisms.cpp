@@ -21,13 +21,51 @@
 # include <boost/graph/vf2_sub_graph_iso.hpp>
 # include <boost/graph/subgraph.hpp>
 
+# include "graph_utils.h"
+# include "tree_decomposition.hpp"
+# include "nice_tree_decomposition.hpp"
+
 
 using namespace boost;
 
 using Graph = adjacency_list<vecS, vecS, directedS>;
 using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
-using DecompositionBags = associative_property_map<std::map<Vertex, std::set<Vertex>>>;
+using BagsMap = std::map<Vertex, std::set<Vertex>>;
+using DecompositionBags = associative_property_map<BagsMap>;
+
+/**
+ * @param n, the number of vertices in the graph.
+ * @return A path on n vertices.
+*/
+Graph path(int n) {
+
+    Graph path = Graph(n);
+
+    for(int i=0; i < n-1; i++) {
+        add_edge(i, i+1, path);
+    }
+
+	return path;
+}
+
+template <class G, class PM>
+// Helper function to save graph to file from https://github.com/Cynt3r/boost-treewidth
+void save_graph(std::string filename, G & g, PM & pm) {
+	std::ofstream file;
+  	file.open(filename);
+  	boost::write_graphviz(file, g, make_label_writer(pm));
+  	file.close();
+}
+
+template <class G>
+// Same helper function but with default labels
+void save_graph(std::string filename, G & g) {
+	std::ofstream file;
+  	file.open(filename);
+  	boost::write_graphviz(file, g);
+  	file.close();
+}
 
 
 /**
@@ -166,4 +204,31 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
     // If "forget", get the colour of the new node added in the child. Then iterate
     // over all nodes in G with the same colour, and branch here to recurse rooting on the child with all possible extensions to K.
     // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
+}
+
+int main() {
+  std::cout << "Is this working?";
+
+  Graph new_path = path(10);
+
+  save_graph("test_path.dot", new_path);
+
+  BagsMap bags_m;
+  DecompositionBags bags_pm(bags_m);
+
+    Graph dec_path;
+
+    bool x = boost::tree_decomposition(new_path, dec_path, bags_pm, (-0.75));
+
+    save_graph("path_dec.dot", dec_path, bags_pm);
+
+    Graph nice_path;
+    BagsMap nice_bags_m;
+    DecompositionBags nice_bags_pm(nice_bags_m);
+
+    Vertex root = boost::nice_tree_decomposition(dec_path, bags_pm, nice_path, nice_bags_pm);
+
+    save_graph("nice_path.dot", nice_path, nice_bags_pm);
+
+
 }
