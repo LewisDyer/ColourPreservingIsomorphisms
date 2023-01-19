@@ -7,9 +7,9 @@
 
 using namespace boost;
 
-using Graph = adjacency_list<vecS, vecS, directedS>;
-using Vertex = graph_traits<Graph>::vertex_descriptor;
-using Edge = graph_traits<Graph>::edge_descriptor;
+// using Graph = adjacency_list<vecS, vecS, directedS>;
+// using Vertex = graph_traits<Graph>::vertex_descriptor;
+// using Edge = graph_traits<Graph>::edge_descriptor;
 
 template <class G>
 G path(int n);

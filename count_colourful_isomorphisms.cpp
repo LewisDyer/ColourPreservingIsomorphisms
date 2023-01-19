@@ -28,7 +28,7 @@
 
 using namespace boost;
 
-using Graph = adjacency_list<vecS, vecS, directedS>;
+using Graph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
@@ -206,8 +206,30 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
     // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
 }
 
+namespace std {
+	template <class T>
+    // Function to print out a set
+	std::ostream& operator<< (std::ostream& os, const std::set<T> & in) {
+		os << "[";
+		for (auto it = in.begin(); it != in.end(); it++) {
+            if (it != in.begin()) os << ",";
+            os << *it;
+        }
+        os << "]";
+
+		return os;
+	}
+}
+
+void output_bags(Graph G, DecompositionBags bags_pm) {
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        std::cout << i << ": " << bags_pm[i] << "\n";
+    }
+}
+
+
 int main() {
-  std::cout << "Is this working?";
+  std::cout << "Is this working?\n";
 
   Graph new_path = path(10);
 
@@ -219,8 +241,12 @@ int main() {
     Graph dec_path;
 
     bool x = boost::tree_decomposition(new_path, dec_path, bags_pm, (-0.75));
+    
+    save_graph("test_dec.dot", dec_path);
 
-    save_graph("path_dec.dot", dec_path, bags_pm);
+    output_bags(dec_path, bags_pm);
+
+    // save_graph("path_dec.dot", dec_path, bags_pm);
 
     Graph nice_path;
     BagsMap nice_bags_m;
@@ -228,7 +254,11 @@ int main() {
 
     Vertex root = boost::nice_tree_decomposition(dec_path, bags_pm, nice_path, nice_bags_pm);
 
-    save_graph("nice_path.dot", nice_path, nice_bags_pm);
+    save_graph("test_nice.dot", nice_path);
+
+    output_bags(nice_path, nice_bags_pm);
+
+    // save_graph("nice_path.dot", nice_path, nice_bags_pm);
 
 
 }
