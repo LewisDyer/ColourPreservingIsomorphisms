@@ -28,7 +28,7 @@
 
 using namespace boost;
 
-using Graph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
@@ -54,7 +54,7 @@ template <class G, class PM>
 void save_graph(std::string filename, G & g, PM & pm) {
 	std::ofstream file;
   	file.open(filename);
-  	boost::write_graphviz(file, g, make_label_writer(pm));
+  	boost::write_graphviz(file, g, boost::make_label_writer(pm));
   	file.close();
 }
 
@@ -242,11 +242,11 @@ int main() {
 
     bool x = boost::tree_decomposition(new_path, dec_path, bags_pm, (-0.75));
     
-    save_graph("test_dec.dot", dec_path);
+    //save_graph("test_dec.dot", dec_path);
 
     output_bags(dec_path, bags_pm);
 
-    // save_graph("path_dec.dot", dec_path, bags_pm);
+    save_graph("test_path_dec.dot", dec_path, bags_pm);
 
     Graph nice_path;
     BagsMap nice_bags_m;
@@ -258,7 +258,7 @@ int main() {
 
     output_bags(nice_path, nice_bags_pm);
 
-    // save_graph("nice_path.dot", nice_path, nice_bags_pm);
+    save_graph("test_nice_path.dot", nice_path, nice_bags_pm);
 
 
 }
