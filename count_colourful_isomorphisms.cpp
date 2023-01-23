@@ -18,7 +18,7 @@
 # include <list>
 # include <boost/graph/adjacency_list.hpp>
 # include <boost/tuple/tuple.hpp>
-# include <boost/graph/vf2_sub_graph_iso.hpp>
+# include <boost/graph/isomorphism.hpp>
 # include <boost/graph/subgraph.hpp>
 
 # include "graph_utils.h"
@@ -79,6 +79,7 @@ template <typename Graph, typename ColourPropertyMap>
 int count_colour_preserving_isomorphisms(const Graph& H, const Graph& G, const ColourPropertyMap& colour_H, const ColourPropertyMap& colour_G) {
     // get a tree decomposition of H
     // make it nice, and get its root
+    // then iterate over all possible Ks
     // inner recursive function (see colourful_count)
     return 1;
 }
@@ -130,6 +131,18 @@ VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bag
 }
 
 /**
+ * @param v1 a vertex in G
+ * @param v2 a vertex in H
+ * @param colour1 a property map of colours in G
+ * @param colour2 a property map of colours in H
+ * @return true if v1 and v2 have the same colours in their respective graphs, and false otherwise.
+*/
+template <typename ColourPropertyMap>
+bool colour_match(Vertex v1, Vertex v2, ColourPropertyMap colour1, ColourPropertyMap colour2) {
+    return colour1[v1] == colour2[v2];
+}
+
+/**
  * @param root A vertex of the root of the subtree of the nice tree decomposition we're considering. Its bag X_y has m vertices, with H_y being the subgraphs of H induced by all vertices in this subtree.
  * @param tree the nice tree decomposition we're working with.
  * @param K a subset of the vertex set of G with exactly m vertices.
@@ -152,14 +165,8 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
     // Get the subgraph of G induced by K
     auto Gk = G.create_subgraph(boost::make_iterator_range(K.begin(), K.end()));
 
-    std::vector<int> isomorphism(boost::num_vertices(Xy));
-
-    //auto callback = [&isomorphism](int v1, int v2) { isomorphism[v1] = v2; };
-    
-    bool areIsomorphic  = boost::vf2_subgraph_iso(Xy, Gk, boost::make_iterator_property_map(colour_H.begin(), boost::get(boost::vertex_index, Xy)), boost::make_iterator_property_map(colour_G.begin(), boost::get(boost::vertex_index, Gk)));
-
-    // Check if these subgraphs are colour-preserving isomorphic
-    // If not, return 0
+    std::vector<Vertex> isomorphism;
+    bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy))).vertex_invariant(colour_match));
 
     if (!areIsomorphic) { return 0; }
 
@@ -191,11 +198,41 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
 
             typename graph_traits<Graph>::edge_iterator child, child_end;
             boost::tie(child, child_end) = boost::out_edges(root, tree);
+
+            //Get the colour of the new vertex in this node
+            std::set<Vertex> diff = std::set_difference(child.begin(), child.end(), root.begin(), root.end());
+            Vertex new_v = diff.front();
+            int colour = colour_H[new_v];
+
+            // Iterate over vertices in G and check their colour - branch on all vertices with the same colour as the new vertex.
+
+            int total = 0;
+            typedef typename graph_traits<Graph>::vertex_iterator iter_v;
+            for (std::pair<iter_v, iter_v> p = vertices(tree); p.first != p.second; ++p.first) {
+                if colour_G[p.first] == colour {
+                    std::set<Vertex> new_K;
+                    std::copy(K.begin(), K.end() std::inserter(new_K, new_K.begin()));
+                    new_K.insert(p.first);
+
+                    total += colourful_count(child, tree, new_K, H, G, bags, colour_H, colour_G);
+                }
+            }
+
+            return total;
             break;
         case introduce:
 
             //typename graph_traits<Graph>::edge_iterator child, child_end;
             boost::tie(child, child_end) = boost::out_edges(root, tree);
+
+            std::set<Vertex> diff = std::set_difference(root.begin(), root.end(), child.begin(), child.end());
+            Vertex forgotten_v = diff.front();
+            int prev_target = find(isomorphism.begin(), isomorphism.end(), forgotten_v) - isomorphism.begin();
+
+            std::set<Vertex> new_K;
+            std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
+            new_K.remove(prev_target)
+            return colourful_count(child, tree, new_K, H, G, bags, colour_H, colour_G);
             break;
     }
 
@@ -205,6 +242,9 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
     // over all nodes in G with the same colour, and branch here to recurse rooting on the child with all possible extensions to K.
     // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
 }
+
+// list all Ks
+// 
 
 namespace std {
 	template <class T>
