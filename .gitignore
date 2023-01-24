@@ -33,3 +33,5 @@
 
 # Conanfile build folder
 /build
+.vscode/settings.json
+.vscode/tasks.json
