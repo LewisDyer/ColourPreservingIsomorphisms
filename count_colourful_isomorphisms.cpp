@@ -29,7 +29,7 @@
 
 using namespace boost;
 
-using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using Graph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
@@ -109,9 +109,10 @@ VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bag
         case 1:
             typename graph_traits<Graph>::edge_iterator child, child_end;
             boost::tie(child, child_end) = out_edges(v, tree);
-            VertexType type = (size(bags[v]) > size(bags[child])) ? forget : introduce;
+            VertexType type = (size(bags[v]) > size(bags[boost::source(*child, tree)])) ? forget : introduce;
             return type;
             break;
+        default: return leaf; break;
     }
 }
 
@@ -126,6 +127,28 @@ template <typename ColourPropertyMap>
 bool colour_match(Vertex v1, Vertex v2, ColourPropertyMap colour1, ColourPropertyMap colour2) {
     return colour1[v1] == colour2[v2];
 }
+
+/**
+  Functor to filter vertices in a graph which are not in the given set
+  Used from https://stackoverflow.com/questions/29991918/boost-graph-library-bfs-on-a-vertex-filtered-graph
+  */
+class VertexSetFilter
+{
+public:
+    std::set<Vertex> S;
+
+    VertexSetFilter() = default; // needs default constructor
+
+    VertexSetFilter(std::set<Vertex> inputSet)
+    {
+        S = inputSet;
+    }
+
+    bool operator()(const Vertex& v) const
+    {
+        return S.find(v) != S.end(); // keep all vertx_descriptors greater than 3
+    }
+};
 
 /**
  * @param root A vertex of the root of the subtree of the nice tree decomposition we're considering. Its bag X_y has m vertices, with H_y being the subgraphs of H induced by all vertices in this subtree.
@@ -145,14 +168,27 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
 
     std::set<Vertex> root_vertices = bags[root];
 
+    //VertexSetFilter x_filter(root_vertices);
+    //typedef boost::filtered_graph<Graph, boost::keep_all, VertexSetFilter> Subgraph;
 
-    auto Xy = H.create_subgraph(boost::make_iterator_range(root_vertices.begin(), root_vertices.end()));
+    //Subgraph Xy(H, boost::keep_all(), x_filter);
+
+    Graph Xy = path(5);
+
+
+    //auto Xy = H.create_subgraph(boost::make_iterator_range(root_vertices.begin(), root_vertices.end()));
+
 
     // Get the subgraph of G induced by K
-    auto Gk = G.create_subgraph(boost::make_iterator_range(K.begin(), K.end()));
+    //VertexSetFilter k_filter(K);
+    //Subgraph Gk(G, boost::keep_all(), k_filter);
+    //auto Gk = G.create_subgraph(boost::make_iterator_range(K.begin(), K.end()));
 
+    Graph Gk = path(3);
     std::vector<Vertex> isomorphism;
-    bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy))).vertex_invariant(colour_match));
+    //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy))).vertex_invariant(colour_match));
+    //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
+    bool areIsomorphic = false;
 
     if (!areIsomorphic) { return 0; }
 
@@ -169,7 +205,7 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
             
             int count = 0;
             Vertex child1, child2;
-            for (std::pair<typename Graph::out_edge_iterator, typename Graph::out_edge_iterator> edge_pair = boost::out_edges(root, tree); edge_pair.first != edge_pair.secondl; ++edge_pair.first) {
+            for (std::pair<typename Graph::out_edge_iterator, typename Graph::out_edge_iterator> edge_pair = boost::out_edges(root, tree); edge_pair.first != edge_pair.second; ++edge_pair.first) {
                 Edge e = *edge_pair.first;
                 if (count == 0) {
                     child1 = boost::target(e, tree);
@@ -187,8 +223,11 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
             typename graph_traits<Graph>::edge_iterator child, child_end;
             boost::tie(child, child_end) = boost::out_edges(root, tree);
 
+            Vertex child1 = boost::target(*child, tree);
+
             //Get the colour of the new vertex in this node
-            std::set<Vertex> diff = std::set_difference(bags[child].begin(), bags[child].end(), bags[root].begin(), bags[root].end());
+            std::set<Vertex> diff;
+            std::set_difference(get(bags, child1).begin(), get(bags, child1).end(), get(bags, root).begin(), get(bags, root).end(), std::inserter(diff, diff.begin()));
             Vertex new_v = *(diff.begin());
             int colour = colour_H[new_v];
 
@@ -197,12 +236,12 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
             int total = 0;
             typedef typename graph_traits<Graph>::vertex_iterator iter_v;
             for (std::pair<iter_v, iter_v> p = vertices(tree); p.first != p.second; ++p.first) {
-                if (colour_G[p.first] == colour) {
+                if (colour_G[*p.first] == colour) {
                     std::set<Vertex> new_K;
                     std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
-                    new_K.insert(p.first);
+                    new_K.insert(*p.first);
 
-                    total += colourful_count(child, tree, new_K, H, G, bags, colour_H, colour_G);
+                    total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
                 }
             }
 
@@ -214,14 +253,21 @@ int colourful_count(const Vertex& root, const Graph& tree, std::set<Vertex> K, G
             typename graph_traits<Graph>::edge_iterator child, child_end;
             boost::tie(child, child_end) = boost::out_edges(root, tree);
 
-            std::set<Vertex> diff = std::set_difference(bags[root].begin(), bags[root].end(), bags[child].begin(), bags[child].end());
+            Vertex child1 = boost::target(*child, tree);
+
+            std::set<Vertex> diff;
+            std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
             Vertex forgotten_v = *(diff.begin());
             int prev_target = find(isomorphism.begin(), isomorphism.end(), forgotten_v) - isomorphism.begin();
 
             std::set<Vertex> new_K;
             std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
             new_K.erase(prev_target);
-            return colourful_count(child, tree, new_K, H, G, bags, colour_H, colour_G);
+            return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
+            break;
+        }
+        default: {
+            return 0;
             break;
         }
     }
