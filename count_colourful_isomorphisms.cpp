@@ -35,7 +35,8 @@ using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
 using DecompositionBags = associative_property_map<BagsMap>;
-using ColourMap = std::map<Vertex, int>;
+using Colours= std::map<Vertex, int>;
+using ColourMap = associative_property_map<Colours>;
 
 /**
  * @param n, the number of vertices in the graph.
@@ -108,7 +109,7 @@ VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bag
         case 0: { return leaf; break; }
         case 2: { return join; break; }
         case 1: {
-            typename graph_traits<Graph>::edge_iterator child, child_end;
+            typename graph_traits<Graph>::out_edge_iterator child, child_end;
             boost::tie(child, child_end) = out_edges(v, tree);
             VertexType type = (size(bags[v]) > size(bags[boost::source(*child, tree)])) ? forget : introduce;
             return type;
@@ -280,26 +281,26 @@ public:
 //     // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
 // }
 
-// namespace std {
-// 	template <class T>
-//     // Function to print out a set
-// 	std::ostream& operator<< (std::ostream& os, const std::set<T> & in) {
-// 		os << "[";
-// 		for (auto it = in.begin(); it != in.end(); it++) {
-//             if (it != in.begin()) os << ",";
-//             os << *it;
-//         }
-//         os << "]";
+namespace std {
+	template <class T>
+    // Function to print out a set
+	std::ostream& operator<< (std::ostream& os, const std::set<T> & in) {
+		os << "[";
+		for (auto it = in.begin(); it != in.end(); it++) {
+            if (it != in.begin()) os << ",";
+            os << *it;
+        }
+        os << "]";
 
-// 		return os;
-// 	}
-// }
+		return os;
+	}
+}
 
-// void output_bags(Graph G, DecompositionBags bags_pm) {
-//     for(int i=0; i < boost::num_vertices(G); i++) {
-//         std::cout << i << ": " << bags_pm[i] << "\n";
-//     }
-// }
+void output_bags(Graph G, DecompositionBags bags_pm) {
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        std::cout << i << ": " << bags_pm[i] << "\n";
+    }
+}
 
 
 
@@ -336,30 +337,54 @@ public:
 
 int main() {
 
+std::cout << "IS THIS RUNNING!";
+
 Graph H = path(5);
 Graph G = path(10);
 
+std::cout << "MADE THE GRAPHS\n";
 
+Colours col_H;
 
-ColourMap colour_H;
+std::cout << "MADE MAP 1\n";
 
 for(int i=0; i < boost::num_vertices(H); i++) {
-    colour_H[i] = i;
+    col_H[i] = i;
 }
 
-ColourMap colour_G;
+ColourMap colour_H(col_H);
+
+Colours col_G;
 
 for(int i=0; i < boost::num_vertices(G); i++) {
-    colour_G[i] = 5 - std::abs(i-5);
+    if (i <=4) {
+        col_G[i] = i;
+    } else{
+        col_G[i] = 5 - std::abs(i-4);
+    }
+   
 }
 
-// BagsMap bags_m;
-// DecompositionBags bags_pm(bags_m);
-// Graph dec;
+ColourMap colour_G(col_G);
 
-// bool x = boost::tree_decomposition(H, dec, bags_pm, -0.75);
+BagsMap bags_m;
+DecompositionBags bags_pm(bags_m);
+Graph dec;
 
-//std::cout << x;
+
+bool x = boost::tree_decomposition(H, dec, bags_pm, -0.75);
+
+Graph tree;
+BagsMap nice_bags_m;
+DecompositionBags bags(nice_bags_m);
+
+Vertex root = boost::nice_tree_decomposition(dec, bags_pm, tree, bags);
+
+save_graph("great_test.dot", tree, bags);
+
+save_graph("H_colour.dot", H, colour_H);
+
+save_graph("G_colour.dot", G, colour_G);
 
 //count_colour_preserving_isomorphisms(H, G, colour_H, colour_G);
 
