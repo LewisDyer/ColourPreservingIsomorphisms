@@ -29,7 +29,7 @@
 
 using namespace boost;
 
-using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using Graph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
@@ -111,6 +111,7 @@ Vertex get_root(const Graph& tree) {
 
 
 enum VertexType {leaf, join, forget, introduce};
+const char* node_type[4] = {"leaf", "join", "forget", "introduce"};
 
 /**
  * @param v the vertex we're considering in the nice tree decomposition
@@ -131,7 +132,7 @@ VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bag
         case 1: {
             typename graph_traits<Graph>::out_edge_iterator child, child_end;
             boost::tie(child, child_end) = out_edges(v, tree);
-            VertexType type = (size(bags[v]) > size(bags[boost::source(*child, tree)])) ? forget : introduce;
+            VertexType type = (size(bags[v]) > size(bags[boost::source(*child, tree)])) ? introduce : forget;
             return type;
             break;
         }
@@ -187,116 +188,126 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
 
     std::cout << "root is " << root_vertices << "\n";
 
+    std::cout << "K is " << K << "\n";
+
 
     Graph Xy = induced_subgraph(H, root_vertices);
 
-    save_graph("Test_Xy_empty.dot", Xy);
+    Graph Gk = induced_subgraph(G, K);
 
+    save_graph("Test_Xy.dot", Xy);
 
-    // Graph Xy = path(5);
+    save_graph("Test_Gk.dot", Gk);
 
+    std::vector<Vertex> iso(num_vertices(Xy));
 
-    //auto Xy = H.create_subgraph(boost::make_iterator_range(root_vertices.begin(), root_vertices.end()));
+    std::cout << "before isomorphism check\n";
 
+    bool areIsomorphic;
 
-    // // Get the subgraph of G induced by K
-    // //VertexSetFilter k_filter(K);
-    // //Subgraph Gk(G, boost::keep_all(), k_filter);
-    // //auto Gk = G.create_subgraph(boost::make_iterator_range(K.begin(), K.end()));
-
-    // Graph Gk = path(3);
-    // std::vector<Vertex> isomorphism;
-    // //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy))).vertex_invariant(colour_match));
-    // //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
+    if ((num_vertices(Xy) == 0) && (num_vertices(Gk) == 0)) {
+        areIsomorphic = true;
+    } else {
+        areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy), iso[0])));
+    }
+  
+    //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
     // bool areIsomorphic = false;
 
-    // if (!areIsomorphic) { return 0; }
+    std::cout << "after iso check\n" << areIsomorphic << "\n";
+
+    if (!areIsomorphic) { return 0; }
 
     // // Check the type of the root node in the tree ("leaf"/"join"/"forget"/"introduce")
 
-    // VertexType root_type = getNiceType(root, tree, bags);
+     VertexType root_type = getNiceType(root, tree, bags);
 
-    // switch(root_type) {
-    //     case leaf: {
-    //         return 1;
-    //         break;
-    //     }
-    //     case join: {
+     std::cout << "root type is " << node_type[root_type] << "\n" ;
+
+     switch(root_type) {
+        case leaf: {
+            return 1;
+            break;
+        }
+        case join: {
             
-    //         int count = 0;
-    //         Vertex child1, child2;
-    //         for (std::pair<typename Graph::out_edge_iterator, typename Graph::out_edge_iterator> edge_pair = boost::out_edges(root, tree); edge_pair.first != edge_pair.second; ++edge_pair.first) {
-    //             Edge e = *edge_pair.first;
-    //             if (count == 0) {
-    //                 child1 = boost::target(e, tree);
-    //             } else {
-    //                 child2 = boost::target(e,tree);
-    //             }
+            int count = 0;
+            Vertex child1, child2;
+            for (std::pair<typename Graph::out_edge_iterator, typename Graph::out_edge_iterator> edge_pair = boost::out_edges(root, tree); edge_pair.first != edge_pair.second; ++edge_pair.first) {
+                Edge e = *edge_pair.first;
+                if (count == 0) {
+                    child1 = boost::target(e, tree);
+                } else {
+                    child2 = boost::target(e,tree);
+                }
 
-    //             count++;
-    //         }
-    //         return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G));
-    //         break;
-    //     }
-    //     case forget: {
+                count++;
+            }
+            return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G));
+            break;
+        }
+        case forget: {
 
-    //         typename graph_traits<Graph>::edge_iterator child, child_end;
-    //         boost::tie(child, child_end) = boost::out_edges(root, tree);
+            typename graph_traits<Graph>::out_edge_iterator child, child_end;
+            boost::tie(child, child_end) = boost::out_edges(root, tree);
 
-    //         Vertex child1 = boost::target(*child, tree);
+            Vertex child1 = boost::target(*child, tree);
 
-    //         //Get the colour of the new vertex in this node
-    //         std::set<Vertex> diff;
-    //         std::set_difference(get(bags, child1).begin(), get(bags, child1).end(), get(bags, root).begin(), get(bags, root).end(), std::inserter(diff, diff.begin()));
-    //         Vertex new_v = *(diff.begin());
-    //         int colour = colour_H[new_v];
+            //Get the colour of the new vertex in this node
+            std::set<Vertex> diff;
+            std::set_difference(get(bags, child1).begin(), get(bags, child1).end(), get(bags, root).begin(), get(bags, root).end(), std::inserter(diff, diff.begin()));
+            Vertex new_v = *(diff.begin());
+            int colour = colour_H[new_v];
 
-    //         // Iterate over vertices in G and check their colour - branch on all vertices with the same colour as the new vertex.
+            // Iterate over vertices in G and check their colour - branch on all vertices with the same colour as the new vertex.
 
-    //         int total = 0;
-    //         typedef typename graph_traits<Graph>::vertex_iterator iter_v;
-    //         for (std::pair<iter_v, iter_v> p = vertices(tree); p.first != p.second; ++p.first) {
-    //             if (colour_G[*p.first] == colour) {
-    //                 std::set<Vertex> new_K;
-    //                 std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
-    //                 new_K.insert(*p.first);
+            int total = 0;
+            typedef typename graph_traits<Graph>::vertex_iterator iter_v;
+            for (std::pair<iter_v, iter_v> p = vertices(tree); p.first != p.second; ++p.first) {
+                if (colour_G[*p.first] == colour) {
+                    std::set<Vertex> new_K;
+                    std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
+                    new_K.insert(*p.first);
 
-    //                 total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
-    //             }
-    //         }
+                    total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
+                }
+            }
 
-    //         return total;
-    //         break;
-    //     }
-    //     case introduce: {
+            return total;
+            break;
+        }
+        case introduce: {
 
-    //         typename graph_traits<Graph>::edge_iterator child, child_end;
-    //         boost::tie(child, child_end) = boost::out_edges(root, tree);
+            typename graph_traits<Graph>::out_edge_iterator child, child_end;
+            boost::tie(child, child_end) = boost::out_edges(root, tree);
 
-    //         Vertex child1 = boost::target(*child, tree);
+            Vertex child1 = boost::target(*child, tree);
 
-    //         std::set<Vertex> diff;
-    //         std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
-    //         Vertex forgotten_v = *(diff.begin());
-    //         int prev_target = find(isomorphism.begin(), isomorphism.end(), forgotten_v) - isomorphism.begin();
+            std::set<Vertex> diff;
+            std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
+            Vertex forgotten_v = *(diff.begin());
+            int prev_target = find(iso.begin(), iso.end(), forgotten_v) - iso.begin();
 
-    //         std::set<Vertex> new_K;
-    //         std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
-    //         new_K.erase(prev_target);
-    //         return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
-    //         break;
-    //     }
-    //     default: {
-    //         return 0;
-    //         break;
-    //     }
-    // }
+            std::set<Vertex> new_K;
+            std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
+            new_K.erase(prev_target);
+            return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
+            break;
+        }
+        default: {
+            return 0;
+            break;
+        }
+    }
 
     // If "leaf", return 1
     // If "join", return product of counts rooted children, use the same K
     // If "forget", get the colour of the new node added in the child. Then iterate
     // over all nodes in G with the same colour, and branch here to recurse rooting on the child with all possible extensions to K.
     // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
+
+
+    return 1;
 }
 
 /**
