@@ -21,6 +21,8 @@
 # include <boost/tuple/tuple.hpp>
 # include <boost/graph/isomorphism.hpp>
 # include <boost/graph/graphviz.hpp>
+# include <boost/graph/undirected_graph.hpp>
+# include <boost/graph/copy.hpp>
 # include <iostream>
 
 # include "tree_decomposition.hpp"
@@ -32,6 +34,7 @@ using namespace boost;
 using Graph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex = graph_traits<Graph>::vertex_descriptor;
 using Edge = graph_traits<Graph>::edge_descriptor;
+using UndirectedGraph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
 using DecompositionBags = associative_property_map<BagsMap>;
 using Colours= std::map<Vertex, int>;
@@ -195,13 +198,20 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
 
     Graph Gk = induced_subgraph(G, K);
 
+    // need conversions to undirected graphs for graph isomorphisms
+    // UndirectedGraph Xy(num_vertices(Xy_dir));
+    // boost::copy_graph(Xy_dir, Xy);
+
+    // UndirectedGraph Gk(num_vertices(Gk_dir));
+    // boost::copy_graph(Gk_dir, Gk);
+
     save_graph("Test_Xy.dot", Xy);
 
     save_graph("Test_Gk.dot", Gk);
 
-    std::vector<Vertex> iso(num_vertices(Xy));
+    std::vector<Vertex> iso(num_vertices(H));
 
-    std::cout << "before isomorphism check\n";
+    std::cout << root_vertices << " in H iso. to " << K << " in G? ";
 
     bool areIsomorphic;
 
@@ -210,6 +220,11 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
         areIsomorphic = true;
     } else if ((num_vertices(Xy) == 0) || (num_vertices(Gk) == 0)) {
         areIsomorphic = false;
+    } else if ((num_vertices(Xy) == 1) && (num_vertices(Gk) == 1)) {
+        // NOTE will need to refactor this for colour checking too
+        areIsomorphic = true;
+        Vertex y, k = *(root_vertices.begin()); *(K.begin());
+        iso[y] = k;
     } else {
         // NOTE this doesn't check colour-preserving isomorphisms yet!
         areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy), iso[0])));
@@ -220,9 +235,12 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
 
     
 
-    if (!areIsomorphic) {std::cout << "not isomorphic\n"; return 0; }
+    if (!areIsomorphic) {std::cout << "No\n"; return 0; }
 
-    std::cout << "are isomorphic\n";
+    std::cout << "Yes\n";
+
+    for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
+     
     // // Check the type of the root node in the tree ("leaf"/"join"/"forget"/"introduce")
 
      VertexType root_type = getNiceType(root, tree, bags);
@@ -292,7 +310,15 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
             std::set<Vertex> diff;
             std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
             Vertex forgotten_v = *(diff.begin());
-            int prev_target = find(iso.begin(), iso.end(), forgotten_v) - iso.begin();
+
+            int prev_target;
+            // Not the most efficient, but size of this is bounded by size of H so not too bad
+            for(int i=0; i < iso.size(); i++) {
+                if(iso[i] == forgotten_v) {
+                    prev_target = iso[i];
+                    break;
+                }
+            }
 
             std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
             std::set<Vertex> new_K;
