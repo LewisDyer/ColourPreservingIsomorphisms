@@ -132,7 +132,7 @@ VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bag
         case 1: {
             typename graph_traits<Graph>::out_edge_iterator child, child_end;
             boost::tie(child, child_end) = out_edges(v, tree);
-            VertexType type = (size(bags[v]) > size(bags[boost::source(*child, tree)])) ? introduce : forget;
+            VertexType type = (size(bags[v]) > size(bags[boost::target(*child, tree)])) ? introduce : forget;
             return type;
             break;
         }
@@ -205,19 +205,24 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
 
     bool areIsomorphic;
 
+    // trying to do isomorphism checks with empty graphs causes early termination
     if ((num_vertices(Xy) == 0) && (num_vertices(Gk) == 0)) {
         areIsomorphic = true;
+    } else if ((num_vertices(Xy) == 0) || (num_vertices(Gk) == 0)) {
+        areIsomorphic = false;
     } else {
+        // NOTE this doesn't check colour-preserving isomorphisms yet!
         areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy), iso[0])));
     }
   
     //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
     // bool areIsomorphic = false;
 
-    std::cout << "after iso check\n" << areIsomorphic << "\n";
+    
 
-    if (!areIsomorphic) { return 0; }
+    if (!areIsomorphic) {std::cout << "not isomorphic\n"; return 0; }
 
+    std::cout << "are isomorphic\n";
     // // Check the type of the root node in the tree ("leaf"/"join"/"forget"/"introduce")
 
      VertexType root_type = getNiceType(root, tree, bags);
@@ -263,8 +268,9 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
 
             int total = 0;
             typedef typename graph_traits<Graph>::vertex_iterator iter_v;
-            for (std::pair<iter_v, iter_v> p = vertices(tree); p.first != p.second; ++p.first) {
-                if (colour_G[*p.first] == colour) {
+            for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
+                if (colour_G[*p.first] == colour && *p.first != boost::num_vertices(G)) {
+                    std::cout << "try mapping " << new_v << " to " << *p.first << "\n";
                     std::set<Vertex> new_K;
                     std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
                     new_K.insert(*p.first);
@@ -288,6 +294,7 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
             Vertex forgotten_v = *(diff.begin());
             int prev_target = find(iso.begin(), iso.end(), forgotten_v) - iso.begin();
 
+            std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
             std::set<Vertex> new_K;
             std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
             new_K.erase(prev_target);
@@ -295,6 +302,7 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
             break;
         }
         default: {
+            std::cout << "default type (you should never see this!)\n";
             return 0;
             break;
         }
@@ -326,7 +334,7 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
     BagsMap bags_m;
     DecompositionBags bags_pm(bags_m);
     
-    bool x = boost::tree_decomposition(H, dec, bags_pm, -0.75);
+    bool x = boost::tree_decomposition(H, dec, bags_pm, 1);
 
     std::cout << "initial decomposition fine\n";
 
@@ -335,6 +343,12 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
     DecompositionBags bags(nice_bags_m);
 
     Vertex root = boost::nice_tree_decomposition(dec, bags_pm, tree, bags);
+
+    save_graph("test_nice_dec.dot", tree, bags);
+
+    for(int i=0; i < boost::num_vertices(tree); i++) {
+        std::cout << "vertex " << i << " has node type " << node_type[getNiceType(i, tree, bags)] << "\n";
+    }
 
     //root always has empty bags, so K starts empty
     std::set<Vertex> K;
@@ -347,6 +361,8 @@ int main() {
 
 Graph H = path(5);
 Graph G = path(10);
+
+save_graph("what_is_H.dot", H);
 
 Colours col_H;
 
@@ -373,8 +389,9 @@ save_graph("H_colour.dot", H, colour_H);
 
 save_graph("G_colour.dot", G, colour_G);
 
+
 int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G);
 
-std::cout << count;
+std::cout << "NUMBER OF CPIs IS " << count;
 
 }
