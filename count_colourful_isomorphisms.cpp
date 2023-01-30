@@ -31,10 +31,10 @@
 
 using namespace boost;
 
-using Graph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
-using Vertex = graph_traits<Graph>::vertex_descriptor;
+using DiGraph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using Vertex =  ;
 using Edge = graph_traits<Graph>::edge_descriptor;
-using UndirectedGraph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
 using DecompositionBags = associative_property_map<BagsMap>;
 using Colours= std::map<Vertex, int>;
@@ -122,7 +122,7 @@ const char* node_type[4] = {"leaf", "join", "forget", "introduce"};
  * @param bags the property map of bags in the tree
  * @return The type of vertex that v is in tree (either leaf, join, forget or introduce) 
 */
-VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bags) {
+VertexType getNiceType(const Vertex& v, const DiGraph& tree, DecompositionBags bags) {
     // Count children
     // If 0 children, return LEAF
     // If 2 children, return JOIN
@@ -133,7 +133,7 @@ VertexType getNiceType(const Vertex& v, const Graph& tree, DecompositionBags bag
         case 0: { return leaf; break; }
         case 2: { return join; break; }
         case 1: {
-            typename graph_traits<Graph>::out_edge_iterator child, child_end;
+            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
             boost::tie(child, child_end) = out_edges(v, tree);
             VertexType type = (size(bags[v]) > size(bags[boost::target(*child, tree)])) ? introduce : forget;
             return type;
@@ -183,7 +183,7 @@ Graph induced_subgraph(Graph G, std::set<Vertex> V) {
  * @param colour_G an arbitrary k-colouring of vertices of G.
  * @return The number of colour-preserving isomorphisms between subgraphs of G and H_y that extend colour-preserving isomorphisms between K and X_y. If no such isomorphisms exist between K and X_y, return 0.
 */
-int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G ) {
+int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G ) {
     // Get the vertices in the root bag
     // Get the subgraph of H induced by these vertices
 
@@ -256,22 +256,21 @@ int colourful_count(Vertex root, Graph tree, std::set<Vertex> K, Graph H, Graph 
             
             int count = 0;
             Vertex child1, child2;
-            for (std::pair<typename Graph::out_edge_iterator, typename Graph::out_edge_iterator> edge_pair = boost::out_edges(root, tree); edge_pair.first != edge_pair.second; ++edge_pair.first) {
-                Edge e = *edge_pair.first;
-                if (count == 0) {
-                    child1 = boost::target(e, tree);
-                } else {
-                    child2 = boost::target(e,tree);
-                }
 
-                count++;
-            }
+            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
+
+            boost::tie(child, child_end) = boost::out_edges(root,tree);
+            Vertex child1 = boost::target(*child, tree);
+
+            ++child;
+            Vertex child2 = boost::target(*child, tree);
+
             return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G));
             break;
         }
         case forget: {
 
-            typename graph_traits<Graph>::out_edge_iterator child, child_end;
+            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
             boost::tie(child, child_end) = boost::out_edges(root, tree);
 
             Vertex child1 = boost::target(*child, tree);
@@ -356,7 +355,7 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
     // make it nice, and get its root
     // inner recursive function (see colourful_count)
 
-    Graph dec;
+    DiGraph dec;
     BagsMap bags_m;
     DecompositionBags bags_pm(bags_m);
     
@@ -364,7 +363,7 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
 
     std::cout << "initial decomposition fine\n";
 
-    Graph tree;
+    DiGraph tree;
     BagsMap nice_bags_m;
     DecompositionBags bags(nice_bags_m);
 

@@ -14,6 +14,7 @@
 
 using namespace boost;
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using DiGraph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Graph_traits = graph_traits<Graph>;
 using Graph_vertex = Graph_traits::vertex_descriptor;
 using Graph_vertex_size_type = Graph_traits::vertices_size_type;
@@ -59,6 +60,12 @@ void output_bags(Graph G, Decomposition_bags bags_pm) {
     }
 }
 
+void output_bags(DiGraph G, Decomposition_bags bags_pm) {
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        std::cout << i << ": " << bags_pm[i] << "\n";
+    }
+}
+
 int main() {
     Graph path = Graph(10);
 
@@ -72,7 +79,7 @@ int main() {
     Decomposition_bags_map bags_m;
     Decomposition_bags bags_pm(bags_m);
 
-    Graph dec_path;
+    DiGraph dec_path;
 
     bool x = tree_decomposition(path, dec_path, bags_pm, (-0.75));
 
@@ -84,7 +91,7 @@ int main() {
 
     std::cout << "======\n";
 
-    Graph nice_path;
+    DiGraph nice_path;
     Decomposition_bags_map nice_bags_m;
     Decomposition_bags nice_bags_pm(nice_bags_m);
 
