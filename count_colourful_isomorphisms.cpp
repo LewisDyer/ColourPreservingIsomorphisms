@@ -22,6 +22,8 @@
 # include <boost/graph/isomorphism.hpp>
 # include <boost/graph/graphviz.hpp>
 # include <boost/graph/undirected_graph.hpp>
+# include <boost/graph/filtered_graph.hpp>
+# include <boost/graph/subgraph.hpp>
 # include <boost/graph/copy.hpp>
 # include <iostream>
 
@@ -154,22 +156,53 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
     return colour1[v1] == colour2[v2];
 }
 
-Graph induced_subgraph(Graph G, std::set<Vertex> V) {
-    Graph S(V.size());
+// Graph induced_subgraph(Graph G, std::set<Vertex> V) {
+//     Graph S(V.size());
 
-    for (Vertex v: V) {
-        Vertex v_sub = vertex(v, S);
-        auto adj_vertices = boost::adjacent_vertices(v, G);
-        for (auto v_target: boost::make_iterator_range(adj_vertices.first, adj_vertices.second)) {
+//     for (Vertex v: V) {
+//         Vertex v_sub = vertex(v, S);
+//         auto adj_vertices = boost::adjacent_vertices(v, G);
+//         for (auto v_target: boost::make_iterator_range(adj_vertices.first, adj_vertices.second)) {
 
-            if (std::find(V.begin(), V.end(), v_target) != V.end()) {
-                add_edge(v, v_target, S);
-            }
+//             if (std::find(V.begin(), V.end(), v_target) != V.end()) {
+//                 if (!boost::edge(v_target,v,S).second) {add_edge(v, v_target, S); }        
+//             }
             
+//         }
+//     }
+
+//     return S;
+// }
+
+Graph induced_subgraph(Graph G, std::set<Vertex> V) {
+
+    if (V.empty()) { Graph H(0); return H;}
+    Graph H(num_vertices(G));
+    for (auto u: V) {
+        for (auto e: make_iterator_range(out_edges(u,G))) {
+            auto v = target(e, G);
+            if (find(V.begin(), V.end(), v) != V.end()) {
+                add_edge(u,v,H);
+            }
         }
     }
 
-    return S;
+    boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
+    if (boost::num_vertices(H) <= 1) {return H;}
+
+    boost::tie(vi, vi_end) = boost::vertices(H);
+    for(next=vi; vi != vi_end; vi=next) {
+        if (boost::degree(*vi, H) == 0) {
+            boost::remove_vertex(*vi, H);
+        }
+        ++next;
+    }
+
+    if (boost::degree(0, H) == 0) {
+        boost::remove_vertex(0, H);
+    }
+
+    return H;
 }
 
 /**
@@ -195,15 +228,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
 
 
     Graph Xy = induced_subgraph(H, root_vertices);
-
     Graph Gk = induced_subgraph(G, K);
-
-    // need conversions to undirected graphs for graph isomorphisms
-    // UndirectedGraph Xy(num_vertices(Xy_dir));
-    // boost::copy_graph(Xy_dir, Xy);
-
-    // UndirectedGraph Gk(num_vertices(Gk_dir));
-    // boost::copy_graph(Gk_dir, Gk);
 
     save_graph("Test_Xy.dot", Xy);
 
@@ -384,6 +409,16 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
 
 
 int main() {
+
+Graph h = path(5);
+std::set<Vertex> V;
+V.insert(3);
+
+std::cout<<"is this working?\n";
+
+Graph g = induced_subgraph(h,V);
+std::cout<<"try saving\n";
+save_graph("test_induced_G.dot", g);
 
 Graph H = path(5);
 Graph G = path(10);
