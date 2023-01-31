@@ -32,8 +32,8 @@
 using namespace boost;
 
 using DiGraph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
-using Vertex =  ;
-using Edge = graph_traits<Graph>::edge_descriptor;
+using Vertex =  graph_traits<DiGraph>::vertex_descriptor;
+using Edge = graph_traits<DiGraph>::edge_descriptor;
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using BagsMap = std::map<Vertex, std::set<Vertex>>;
 using DecompositionBags = associative_property_map<BagsMap>;
@@ -223,11 +223,12 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
     } else if ((num_vertices(Xy) == 1) && (num_vertices(Gk) == 1)) {
         // NOTE will need to refactor this for colour checking too
         areIsomorphic = true;
-        Vertex y, k = *(root_vertices.begin()); *(K.begin());
+        Vertex y = *(root_vertices.begin());
+        Vertex k = *(K.begin());
         iso[y] = k;
     } else {
         // NOTE this doesn't check colour-preserving isomorphisms yet!
-        areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy), iso[0])));
+        areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy))));
     }
   
     //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
@@ -260,10 +261,10 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
             typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
 
             boost::tie(child, child_end) = boost::out_edges(root,tree);
-            Vertex child1 = boost::target(*child, tree);
+            child1 = boost::target(*child, tree);
 
             ++child;
-            Vertex child2 = boost::target(*child, tree);
+            child2 = boost::target(*child, tree);
 
             return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G));
             break;
@@ -301,7 +302,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
         }
         case introduce: {
 
-            typename graph_traits<Graph>::out_edge_iterator child, child_end;
+            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
             boost::tie(child, child_end) = boost::out_edges(root, tree);
 
             Vertex child1 = boost::target(*child, tree);
