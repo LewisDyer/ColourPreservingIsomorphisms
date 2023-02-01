@@ -22,7 +22,6 @@
 # include <boost/graph/isomorphism.hpp>
 # include <boost/graph/graphviz.hpp>
 # include <boost/graph/undirected_graph.hpp>
-# include <boost/graph/filtered_graph.hpp>
 # include <boost/graph/subgraph.hpp>
 # include <boost/graph/copy.hpp>
 # include <iostream>
@@ -174,36 +173,58 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 //     return S;
 // }
 
-Graph induced_subgraph(Graph G, std::set<Vertex> V) {
+ Graph induced_subgraph(Graph G, std::set<Vertex> V) {
+
+    //NOTE this won't include any isolated vertices
 
     if (V.empty()) { Graph H(0); return H;}
-    Graph H(num_vertices(G));
+    Graph H;
+
+    save_graph("int_G.dot", H);
+
+    std::map<Vertex, Vertex> index_map;
+
+    int i = 0;
+    for (Vertex u:V) {
+        index_map[u] = i;
+        ++i;
+    }
+
     for (auto u: V) {
         for (auto e: make_iterator_range(out_edges(u,G))) {
             auto v = target(e, G);
+            if (u < v) {
             if (find(V.begin(), V.end(), v) != V.end()) {
-                add_edge(u,v,H);
+
+                add_edge(index_map[u], index_map[v], H);
+
+            }
             }
         }
     }
 
-    boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
-    if (boost::num_vertices(H) <= 1) {return H;}
 
-    boost::tie(vi, vi_end) = boost::vertices(H);
-    for(next=vi; vi != vi_end; vi=next) {
-        if (boost::degree(*vi, H) == 0) {
-            boost::remove_vertex(*vi, H);
-        }
-        ++next;
-    }
-
-    if (boost::degree(0, H) == 0) {
-        boost::remove_vertex(0, H);
-    }
 
     return H;
-}
+ }
+
+//     boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
+//     if (boost::num_vertices(H) <= 1) {return H;}
+
+//     boost::tie(vi, vi_end) = boost::vertices(H);
+//     for(next=vi; vi != vi_end; vi=next) {
+//         if (boost::degree(*vi, H) == 0) {
+//             boost::remove_vertex(*vi, H);
+//         }
+//         ++next;
+//     }
+
+//     if (boost::degree(0, H) == 0) {
+//         boost::remove_vertex(0, H);
+//     }
+
+//     return H;
+// }
 
 /**
  * @param root A vertex of the root of the subtree of the nice tree decomposition we're considering. Its bag X_y has m vertices, with H_y being the subgraphs of H induced by all vertices in this subtree.
@@ -219,6 +240,8 @@ Graph induced_subgraph(Graph G, std::set<Vertex> V) {
 int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G ) {
     // Get the vertices in the root bag
     // Get the subgraph of H induced by these vertices
+
+    std::cout <<"=====NEW VERTEX=====\n";
 
     std::set<Vertex> root_vertices = bags[root];
 
@@ -410,15 +433,17 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
 
 int main() {
 
-Graph h = path(5);
-std::set<Vertex> V;
-V.insert(3);
+// Graph h = path(5);
+// std::set<Vertex> V;
+// V.insert(3);
+// V.insert(4);
 
-std::cout<<"is this working?\n";
+// std::cout<<"is this working?\n";
 
-Graph g = induced_subgraph(h,V);
-std::cout<<"try saving\n";
-save_graph("test_induced_G.dot", g);
+// Graph g = induced_subgraph(h,V);
+// std::cout<<"try saving\n";
+// save_graph("WHERE_IS_G_INDUCED.dot", g);
+// save_graph("test_H.dot", h);
 
 Graph H = path(5);
 Graph G = path(10);
