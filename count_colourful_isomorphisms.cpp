@@ -173,7 +173,7 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 //     return S;
 // }
 
- std::pair<Graph, std::map<Vertex, Vertex>> induced_subgraph(Graph G, std::set<Vertex> V) {
+ std::pair<Graph, std::map<Vertex, Vertex>> induced_subgraph(Graph G, std::set<Vertex> V, bool inverseMap) {
 
     std::map<Vertex, Vertex> index_map;
 
@@ -186,7 +186,7 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 
         // std::cout << "add vertex " << u << "\n";
         add_vertex(u, H);
-        index_map[u] = i;
+        index_map[i] = u;
         ++i;
     }
 
@@ -212,9 +212,20 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
         }
     }
 
+    if (!inverseMap) {
+        return std::make_pair(H, index_map);
 
+    } else {
+        std::map<Vertex, Vertex> reverse_map;
 
-    return std::make_pair(H, index_map);
+        for (auto pair: index_map) {
+            reverse_map[pair.second] = pair.first;
+        }
+
+        return std::make_pair(H, reverse_map);
+    }
+
+    
  }
 
 //     boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
@@ -262,8 +273,8 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
     Graph Xy, Gk;
 
 
-    boost::tie(Xy, index_map_H) = induced_subgraph(H, root_vertices);
-    boost::tie(Gk, index_map_G) = induced_subgraph(G, K);
+    boost::tie(Xy, index_map_H) = induced_subgraph(H, root_vertices, true);
+    boost::tie(Gk, index_map_G) = induced_subgraph(G, K, false);
 
     
 
@@ -300,9 +311,9 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
 
     if (!areIsomorphic) {std::cout << "No\n"; return 0; }
 
-    std::cout << "Yes\n";
+    std::cout << "Yes\n=====\n";
 
-    //for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << index_map_H[iso[i]] << "\n"; }
+    for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
     
     
 
@@ -377,14 +388,17 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
             std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
             Vertex forgotten_v = *(diff.begin());
 
-            int prev_target;
+
+            // Given a vertex in Xy: get its representation in the subgraph variable, then the vertex it's mapped to in the representation of GK,
+            // then the actual logical representation of GK.
+            int prev_target = index_map_G[iso[index_map_H[forgotten_v]]];
             // Not the most efficient, but size of this is bounded by size of H so not too bad
-            for(int i=0; i < iso.size(); i++) {
-                if(iso[i] == forgotten_v) {
-                    prev_target = iso[i];
-                    break;
-                }
-            }
+            // for(int i=0; i < iso.size(); i++) {
+            //     if(iso[i] == forgotten_v) {
+            //         prev_target = iso[i];
+            //         break;
+            //     }
+            // }
 
             std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
             std::set<Vertex> new_K;
