@@ -173,28 +173,36 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 //     return S;
 // }
 
- Graph induced_subgraph(Graph G, std::set<Vertex> V) {
-
-    //NOTE this won't include any isolated vertices
-
-    if (V.empty()) { Graph H(0); return H;}
-    Graph H;
-
-    save_graph("int_G.dot", H);
+ std::pair<Graph, std::map<Vertex, Vertex>> induced_subgraph(Graph G, std::set<Vertex> V) {
 
     std::map<Vertex, Vertex> index_map;
 
+    if (V.empty()) { Graph H(0); return std::make_pair(H, index_map);}
+    Graph H;
+
+
     int i = 0;
     for (Vertex u:V) {
+
+        std::cout << "add vertex " << u << "\n";
+        add_vertex(u, H);
         index_map[u] = i;
         ++i;
     }
 
-    for (auto u: V) {
+    for(auto v: index_map) {std::cout << v.first << " -> " << v.second << "\n";}
+
+    std::cout << "# of vertices in graph: " << num_vertices(H) << "\n";
+
+    for (Vertex u: V) {
         for (auto e: make_iterator_range(out_edges(u,G))) {
-            auto v = target(e, G);
+            Vertex v = target(e, G);
+            std::cout << "checking edge (" << index_map[u] << ", " << index_map[v] << ")\n";
+            std::cout << "without index_map it's (" << u << ", " << v << ")\n";
             if (u < v) {
             if (find(V.begin(), V.end(), v) != V.end()) {
+
+                std::cout << "add edge (" << index_map[u] << ", " << index_map[v] << ")\n";
 
                 add_edge(index_map[u], index_map[v], H);
 
@@ -205,7 +213,7 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 
 
 
-    return H;
+    return std::make_pair(H, index_map);
  }
 
 //     boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
@@ -249,9 +257,14 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
 
     std::cout << "K is " << K << "\n";
 
+    std::map<Vertex, Vertex> index_map;
+    Graph Xy, Gk;
 
-    Graph Xy = induced_subgraph(H, root_vertices);
-    Graph Gk = induced_subgraph(G, K);
+
+    boost::tie(Xy, index_map) = induced_subgraph(H, root_vertices);
+    boost::tie(Gk, index_map) = induced_subgraph(G, K);
+
+    
 
     save_graph("Test_Xy.dot", Xy);
 
@@ -288,7 +301,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
 
     std::cout << "Yes\n";
 
-    for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
+    for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << index_map[iso[i]] << "\n"; }
      
     // // Check the type of the root node in the tree ("leaf"/"join"/"forget"/"introduce")
 
@@ -469,15 +482,31 @@ for(int i=0; i < boost::num_vertices(G); i++) {
    
 }
 
-ColourMap colour_G(col_G);
+std::set<Vertex> set_h, set_g;
+set_h.insert(0);
+set_h.insert(1);
 
-save_graph("H_colour.dot", H, colour_H);
+set_g.insert(8);
+set_g.insert(9);
 
-save_graph("G_colour.dot", G, colour_G);
+std::map<Vertex, Vertex> index_map;
+Graph h_ind, g_ind;
+
+//boost::tie(h_ind, index_map) = induced_subgraph(H, set_h);
+boost::tie(g_ind, index_map) = induced_subgraph(G, set_g);
+
+//save_graph("h_ind.dot", h_ind);
+save_graph("g_ind.dot", g_ind);
+
+// ColourMap colour_G(col_G);
+
+// save_graph("H_colour.dot", H, colour_H);
+
+// save_graph("G_colour.dot", G, colour_G);
 
 
-int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G);
+// int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G);
 
-std::cout << "NUMBER OF CPIs IS " << count;
+// std::cout << "NUMBER OF CPIs IS " << count;
 
 }
