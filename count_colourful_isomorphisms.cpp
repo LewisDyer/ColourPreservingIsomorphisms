@@ -186,22 +186,23 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 
         // std::cout << "add vertex " << u << "\n";
         add_vertex(u, H);
-        index_map[i] = u;
+        index_map[u] = i;
         ++i;
     }
 
-    for(auto v: index_map) {std::cout << v.first << " -> " << v.second << "\n";}
-    std::cout << "----\n";
+    //for(auto v: index_map) {std::cout << v.first << " -> " << v.second << "\n";}
+    //std::cout << "----\n";
 
     // std::cout << "# of vertices in graph: " << num_vertices(H) << "\n";
 
     for (Vertex u: V) {
         for (auto e: make_iterator_range(out_edges(u,G))) {
             Vertex v = target(e, G);
-            // std::cout << "checking edge (" << index_map[u] << ", " << index_map[v] << ")\n";
-            // std::cout << "without index_map it's (" << u << ", " << v << ")\n";
-            if (u < v) {
+            //std::cout << "checking edge (" << index_map[u] << ", " << index_map[v] << ")\n";
+            //std::cout << "without index_map it's (" << u << ", " << v << ")\n";
+            
             if (find(V.begin(), V.end(), v) != V.end()) {
+                if (u < v) {
 
                 // std::cout << "add edge (" << index_map[u] << ", " << index_map[v] << ")\n";
 
@@ -273,8 +274,8 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
     Graph Xy, Gk;
 
 
-    boost::tie(Xy, index_map_H) = induced_subgraph(H, root_vertices, true);
-    boost::tie(Gk, index_map_G) = induced_subgraph(G, K, false);
+    boost::tie(Xy, index_map_H) = induced_subgraph(H, root_vertices, false);
+    boost::tie(Gk, index_map_G) = induced_subgraph(G, K, true);
 
     
 
