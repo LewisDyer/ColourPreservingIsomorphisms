@@ -24,6 +24,7 @@
 # include <boost/graph/undirected_graph.hpp>
 # include <boost/graph/subgraph.hpp>
 # include <boost/graph/copy.hpp>
+# include <boost/bind.hpp>
 # include <iostream>
 
 # include "tree_decomposition.hpp"
@@ -144,17 +145,6 @@ VertexType getNiceType(const Vertex& v, const DiGraph& tree, DecompositionBags b
     }
 }
 
-/**
- * @param v1 a vertex in G
- * @param v2 a vertex in H
- * @param colour1 a property map of colours in G
- * @param colour2 a property map of colours in H
- * @return true if v1 and v2 have the same colours in their respective graphs, and false otherwise.
-*/
-bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
-    return colour1[v1] == colour2[v2];
-}
-
 // Graph induced_subgraph(Graph G, std::set<Vertex> V) {
 //     Graph S(V.size());
 
@@ -172,6 +162,37 @@ bool colour_match(Vertex v1, Vertex v2, ColourMap colour1, ColourMap colour2) {
 
 //     return S;
 // }
+
+struct iso_params {
+    std::map<Vertex, Vertex> H_index_map;
+    std::map<Vertex, Vertex> G_index_map;
+    ColourMap colour_H;
+    ColourMap colour_G;
+};
+
+/**
+ * @param v1 a vertex in H
+ * @param v2 a vertex in G
+ * @param H a subgraph of the pattern graph
+ * @param G a subgraph of the data graph
+ * @param params a struct containing H_index_map, sending the logical representatives of the subgraph of H to the graph representation, and G_index_map which does the opposite for G
+ * Also colour_H and colour_G, which map logical representatives of H and G respectively to their colours.
+ * @return true if v1 and v2 have the same colour, false if they don't.
+*/
+bool colour_match(Vertex v1, Vertex v2, Graph H, Graph G, iso_params params) {
+
+    std::map<Vertex, Vertex> rev_H_index; // from graph rep of sub(H) to logical rep of sub(H);
+
+    for (auto pair: params.H_index_map) {
+            rev_H_index[pair.second] = pair.first;
+        }
+
+    int H_colour = params.colour_H[rev_H_index[v1]];
+    int G_colour = params.colour_H[params.G_index_map[v2]];
+
+    return (H_colour == G_colour);
+
+}
 
  std::pair<Graph, std::map<Vertex, Vertex>> induced_subgraph(Graph G, std::set<Vertex> V, bool inverseMap) {
 
@@ -302,7 +323,13 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
         iso[y] = k;
     } else {
         // NOTE this doesn't check colour-preserving isomorphisms yet!
-        areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy))));
+        //areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy))));
+        iso_params params;
+        params.G_index_map = index_map_G;
+        params.H_index_map = index_map_H;
+        params.colour_G = colour_G;
+        params.colour_H = colour_H;
+        areIsomorphic = boost::isomorphism(Xy, Gk, boost::vertex_invariant(boost::bind(colour_match, _1, _2, boost::ref(Xy), boost::ref(Gk), boost::ref(params))));
     }
   
     //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
