@@ -25,7 +25,7 @@ G path(int n) {
         add_edge(i, i+1, path);
     }
 
-	return path
+	return path;
 }
 
 template <class G, class PM>

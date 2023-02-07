@@ -25,13 +25,16 @@
 # include <boost/graph/subgraph.hpp>
 # include <boost/graph/copy.hpp>
 # include <boost/bind.hpp>
+# include <boost/random/uniform_int_distribution.hpp>
+# include <boost/random/mersenne_twister.hpp>
 # include <iostream>
 
 # include "tree_decomposition.hpp"
 # include "nice_tree_decomposition.hpp"
+# include "graph_utils.h"
 
 
-using namespace boost;
+//using namespace boost;
 
 using DiGraph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex =  graph_traits<DiGraph>::vertex_descriptor;
@@ -41,6 +44,22 @@ using BagsMap = std::map<Vertex, std::set<Vertex>>;
 using DecompositionBags = associative_property_map<BagsMap>;
 using Colours= std::map<Vertex, int>;
 using ColourMap = associative_property_map<Colours>;
+
+/**
+ * @param n, the number of vertices in the graph.
+ * @return A path on n vertices.
+*/
+template <class G>
+G path(int n) {
+
+    G path = Graph(n);
+
+    for(int i=0; i < n-1; i++) {
+        add_edge(i, i+1, path);
+    }
+
+	return path;
+}
 
 namespace std {
 	template <class T>
@@ -63,20 +82,26 @@ void output_bags(Graph G, DecompositionBags bags_pm) {
     }
 }
 
-/**
- * @param n, the number of vertices in the graph.
- * @return A path on n vertices.
-*/
-Graph path(int n) {
+Graph erdos_renyi(int n, double p) {
+    Graph g(n);
 
-    Graph path = Graph(n);
+    boost::random::mt19937 gen;
+    gen.seed(std::time(0));
 
-    for(int i=0; i < n-1; i++) {
-        add_edge(i, i+1, path);
+    boost::random::uniform_int_distribution<> dis(0, n-1);
+    boost::random::uniform_real_distribution<double> real_dis(0.0, 1.0);
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < std::min(i+1+(int)(n*p), n); ++j) {
+            if (real_dis(gen) < p) {
+                boost::add_edge(i, j, g);
+            }
+        }
     }
 
-	return path;
+    return g;
 }
+
+
 
 template <class G, class PM>
 // Helper function to save graph to file from https://github.com/Cynt3r/boost-treewidth
@@ -283,13 +308,13 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
     // Get the vertices in the root bag
     // Get the subgraph of H induced by these vertices
 
-    std::cout <<"=====NEW VERTEX=====\n";
+    //std::cout <<"=====NEW VERTEX=====\n";
 
     std::set<Vertex> root_vertices = bags[root];
 
-    std::cout << "root is " << root_vertices << "\n";
+   //std::cout << "root is " << root_vertices << "\n";
 
-    std::cout << "K is " << K << "\n";
+    //std::cout << "K is " << K << "\n";
 
     std::map<Vertex, Vertex> index_map_H, index_map_G;
     Graph Xy, Gk;
@@ -300,13 +325,13 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
 
     
 
-    save_graph("Test_Xy.dot", Xy);
+    //save_graph("Test_Xy.dot", Xy);
 
-    save_graph("Test_Gk.dot", Gk);
+    //save_graph("Test_Gk.dot", Gk);
 
     std::vector<Vertex> iso(num_vertices(H));
 
-    std::cout << root_vertices << " in H iso. to " << K << " in G? ";
+    //std::cout << root_vertices << " in H iso. to " << K << " in G? ";
 
     bool areIsomorphic;
 
@@ -329,19 +354,15 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
         params.H_index_map = index_map_H;
         params.colour_G = colour_G;
         params.colour_H = colour_H;
+
         areIsomorphic = boost::isomorphism(Xy, Gk, boost::vertex_invariant(boost::bind(colour_match, _1, _2, boost::ref(Xy), boost::ref(Gk), boost::ref(params))));
     }
-  
-    //bool areIsomorphic = isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(isomorphism.begin(), get(vertex_index, Xy), isomorphism[0])));
-    // bool areIsomorphic = false;
 
-    
+    if (!areIsomorphic) { return 0; }
 
-    if (!areIsomorphic) {std::cout << "No\n"; return 0; }
+   //std::cout << "Yes\n=====\n";
 
-    std::cout << "Yes\n=====\n";
-
-    for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
+    //for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
     
     
 
@@ -351,7 +372,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
 
      VertexType root_type = getNiceType(root, tree, bags);
 
-     std::cout << "root type is " << node_type[root_type] << "\n" ;
+     //std::cout << "root type is " << node_type[root_type] << "\n" ;
 
      switch(root_type) {
         case leaf: {
@@ -393,7 +414,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
             typedef typename graph_traits<Graph>::vertex_iterator iter_v;
             for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
                 if (colour_G[*p.first] == colour && *p.first != boost::num_vertices(G)) {
-                    std::cout << "try mapping " << new_v << " to " << *p.first << "\n";
+                    //std::cout << "try mapping " << new_v << " to " << *p.first << "\n";
                     std::set<Vertex> new_K;
                     std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
                     new_K.insert(*p.first);
@@ -428,7 +449,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
             //     }
             // }
 
-            std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
+            //std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
             std::set<Vertex> new_K;
             std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
             new_K.erase(prev_target);
@@ -470,7 +491,7 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
     
     bool x = boost::tree_decomposition(H, dec, bags_pm, 1);
 
-    std::cout << "initial decomposition fine\n";
+    //std::cout << "initial decomposition fine\n";
 
     DiGraph tree;
     BagsMap nice_bags_m;
@@ -478,11 +499,11 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
 
     Vertex root = boost::nice_tree_decomposition(dec, bags_pm, tree, bags);
 
-    save_graph("test_nice_dec.dot", tree, bags);
+    //("test_nice_dec.dot", tree, bags);
 
-    for(int i=0; i < boost::num_vertices(tree); i++) {
-        std::cout << "vertex " << i << " has node type " << node_type[getNiceType(i, tree, bags)] << "\n";
-    }
+    // for(int i=0; i < boost::num_vertices(tree); i++) {
+    //     std::cout << "vertex " << i << " has node type " << node_type[getNiceType(i, tree, bags)] << "\n";
+    // }
 
     //root always has empty bags, so K starts empty
     std::set<Vertex> K;
@@ -505,10 +526,16 @@ int main() {
 // save_graph("WHERE_IS_G_INDUCED.dot", g);
 // save_graph("test_H.dot", h);
 
-Graph H = path(5);
-Graph G = path(10);
+std::cout << "start method\n";
 
-save_graph("what_is_H.dot", H);
+Graph H = path<Graph>(5);
+
+Graph G = erdos_renyi(100, 0.25);
+
+std::cout << "made random graph\n";
+//Graph G = path<Graph>(10);
+
+save_graph("random_G.dot", G);
 
 Colours col_H;
 
@@ -521,13 +548,17 @@ ColourMap colour_H(col_H);
 Colours col_G;
 
 for(int i=0; i < boost::num_vertices(G); i++) {
-    if (i <=4) {
-        col_G[i] = i;
-    } else{
-        col_G[i] = 5 - std::abs(i-4);
-    }
-   
+    col_G[i] = i % 5;
 }
+
+// for(int i=0; i < boost::num_vertices(G); i++) {
+//     if (i <=4) {
+//         col_G[i] = i;
+//     } else{
+//         col_G[i] = 5 - std::abs(i-4);
+//     }
+   
+// }
 
 // std::set<Vertex> set_h, set_g;
 // set_h.insert(0);
@@ -549,7 +580,7 @@ ColourMap colour_G(col_G);
 
 save_graph("H_colour.dot", H, colour_H);
 
-save_graph("G_colour.dot", G, colour_G);
+//save_graph("G_colour.dot", G, colour_G);
 
 
 int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G);
