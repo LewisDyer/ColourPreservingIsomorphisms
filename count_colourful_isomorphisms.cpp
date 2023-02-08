@@ -302,9 +302,10 @@ bool colour_match(Vertex v1, Vertex v2, Graph H, Graph G, iso_params params) {
  * @param bags a property map containing the bags of each vertex in tree
  * @param colour_H a colourful k-colouring of the vertices of H
  * @param colour_G an arbitrary k-colouring of vertices of G.
+ * @param isCounting True for counting, false for just deciding.
  * @return The number of colour-preserving isomorphisms between subgraphs of G and H_y that extend colour-preserving isomorphisms between K and X_y. If no such isomorphisms exist between K and X_y, return 0.
 */
-int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G ) {
+int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G, bool isCounting) {
     // Get the vertices in the root bag
     // Get the subgraph of H induced by these vertices
 
@@ -392,7 +393,15 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
             ++child;
             child2 = boost::target(*child, tree);
 
-            return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G));
+            if (isCounting) {
+            return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G, isCounting) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G, isCounting));
+            } else {
+                if (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G, isCounting) > 0) {
+                    return colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G, isCounting);
+                } else {
+                    return 0;
+                }
+            }
             break;
         }
         case forget: {
@@ -418,8 +427,8 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
                     std::set<Vertex> new_K;
                     std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
                     new_K.insert(*p.first);
-
-                    total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
+                    if (isCounting) { total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting); }
+                    else if (colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting) > 0) {return 1;}
                 }
             }
 
@@ -453,7 +462,7 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
             std::set<Vertex> new_K;
             std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
             new_K.erase(prev_target);
-            return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G);
+            return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting);
             break;
         }
         default: {
@@ -478,9 +487,10 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
  * @param G the data graph.
  * @param colour_H the property map containing the vertex colours of H, is a colourful k-colouring
  * @param colour_G the property map containing the vertex colours of G, is an arbitrary k-colouring
+ * @param isCounting True if we want to count CPIs, False if we just want to check if any exist.
  * @return The number of subgraphs of G isomorphic to H and preserving vertex colourings
 */
-int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, ColourMap colour_G) {
+int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, ColourMap colour_G, bool isCounting) {
     // get a tree decomposition of H
     // make it nice, and get its root
     // inner recursive function (see colourful_count)
@@ -507,7 +517,7 @@ int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, C
 
     //root always has empty bags, so K starts empty
     std::set<Vertex> K;
-    return colourful_count(root, tree, K, H, G, bags, colour_H, colour_G);
+    return colourful_count(root, tree, K, H, G, bags, colour_H, colour_G, isCounting);
     //return 1;
 }
 
@@ -532,10 +542,12 @@ Graph H = path<Graph>(5);
 
 Graph G = erdos_renyi(100, 0.25);
 
-std::cout << "made random graph\n";
+//std::cout << "made random graph\n";
 //Graph G = path<Graph>(10);
 
-save_graph("random_G.dot", G);
+//save_graph("random_G.dot", G);
+
+
 
 Colours col_H;
 
@@ -578,12 +590,13 @@ for(int i=0; i < boost::num_vertices(G); i++) {
 
 ColourMap colour_G(col_G);
 
-save_graph("H_colour.dot", H, colour_H);
+//save_graph("H_colour.dot", H, colour_H);
 
 //save_graph("G_colour.dot", G, colour_G);
 
 
-int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G);
+
+int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G, false);
 
 std::cout << "NUMBER OF CPIs IS " << count;
 
