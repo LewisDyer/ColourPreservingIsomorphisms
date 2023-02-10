@@ -61,6 +61,18 @@ G path(int n) {
 	return path;
 }
 
+template <class G>
+G clique(int n) {
+    G clique = Graph(n);
+    for(int i=0; i < n; i++) {
+        for (int j=0; j < i; j++) {
+            add_edge(i, j, clique);
+        }    
+    }
+
+    return clique;
+}
+
 namespace std {
 	template <class T>
     // Function to print out a set
@@ -540,7 +552,9 @@ std::cout << "start method\n";
 
 Graph H = path<Graph>(5);
 
-Graph G = erdos_renyi(100, 0.25);
+save_graph("clique.dot", H);
+
+Graph G = erdos_renyi(1000, 0.25);
 
 //std::cout << "made random graph\n";
 //Graph G = path<Graph>(10);
