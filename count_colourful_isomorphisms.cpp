@@ -14,6 +14,11 @@
 // BOOST-SPECIFIC ISSUES
 // How do we store graph colours? I'm guessing some sort of property map
 // How do we check graph isomorphisms? Keeping in mind I need to store the map that defines such an isomorphism as well for forget and introduce nodes.
+
+
+
+
+
 # include <set>
 # include <list>
 # include <cmath>
@@ -26,16 +31,11 @@
 # include <boost/graph/copy.hpp>
 # include <boost/bind.hpp>
 # include <boost/random/uniform_int_distribution.hpp>
+# include <boost/random/uniform_real_distribution.hpp>
 # include <boost/random/mersenne_twister.hpp>
 # include <iostream>
 
-# include "tree_decomposition.hpp"
-# include "nice_tree_decomposition.hpp"
-# include "graph_utils.h"
-
-
-//using namespace boost;
-
+using namespace boost;
 using DiGraph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex =  graph_traits<DiGraph>::vertex_descriptor;
 using Edge = graph_traits<DiGraph>::edge_descriptor;
@@ -44,6 +44,13 @@ using BagsMap = std::map<Vertex, std::set<Vertex>>;
 using DecompositionBags = associative_property_map<BagsMap>;
 using Colours= std::map<Vertex, int>;
 using ColourMap = associative_property_map<Colours>;
+
+# include "tree_decomposition.hpp"
+# include "nice_tree_decomposition.hpp"
+//# include "graph_utils.h"
+# include "graph_generators.h"
+
+
 
 /**
  * @param n, the number of vertices in the graph.
@@ -61,6 +68,11 @@ G path(int n) {
 	return path;
 }
 
+
+/**
+ * @param n, the number of vertices in the graph.
+ * @return A clique on n vertices. 
+*/
 template <class G>
 G clique(int n) {
     G clique = Graph(n);
@@ -552,7 +564,6 @@ std::cout << "start method\n";
 
 Graph H = path<Graph>(5);
 
-save_graph("clique.dot", H);
 
 Graph G = erdos_renyi(1000, 0.25);
 

@@ -1,16 +1,11 @@
 # include "tree_decomposition.hpp"
 # include "nice_tree_decomposition.hpp"
 # include <boost/graph/adjacency_list.hpp>
-# include <boost/graph/random_spanning_tree.hpp>
 # include <boost/graph/graphviz.hpp>
 # include <random>
 
 
 using namespace boost;
-
-using Graph = adjacency_list<vecS, vecS, directedS>;
-using Vertex = graph_traits<Graph>::vertex_descriptor;
-using Edge = graph_traits<Graph>::edge_descriptor;
 
 /**
  * @param n, the number of vertices in the graph.
