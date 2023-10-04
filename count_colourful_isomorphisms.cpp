@@ -30,6 +30,7 @@
 # include <boost/graph/subgraph.hpp>
 # include <boost/graph/copy.hpp>
 # include <boost/bind.hpp>
+# include <boost/random.hpp>
 # include <boost/random/uniform_int_distribution.hpp>
 # include <boost/random/uniform_real_distribution.hpp>
 # include <boost/random/mersenne_twister.hpp>
