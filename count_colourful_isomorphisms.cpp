@@ -701,7 +701,9 @@ ColourMap colour_G(col_G);
 
 
 
-int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G, false);
+// int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G, false);
+
+int count = tree_count(H, colour_H, G, colour_G);
 
 std::cout << "NUMBER OF CPIs IS " << count;
 
