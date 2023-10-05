@@ -15,7 +15,16 @@
 // How do we store graph colours? I'm guessing some sort of property map
 // How do we check graph isomorphisms? Keeping in mind I need to store the map that defines such an isomorphism as well for forget and introduce nodes.
 
-
+// TREE-SPECIFIC IMPLEMENTATION
+// r is current vertex being considered, mapped is the vertex that the root is mapped to in the current partial solution
+// will need a wrapper for the root call
+// Count(r, mapped):
+//      if r is a leaf node:
+//          return 1
+//      else:
+//          for each child of r, denoted c:
+//              current_count = count(c, i) for each i adjacent to mapped with colour equal to r
+//          return product of current_counts
 
 
 
@@ -29,7 +38,7 @@
 # include <boost/graph/undirected_graph.hpp>
 # include <boost/graph/subgraph.hpp>
 # include <boost/graph/copy.hpp>
-# include <boost/bind.hpp>
+# include <boost/bind.hpp>  
 # include <boost/random.hpp>
 # include <boost/random/uniform_int_distribution.hpp>
 # include <boost/random/uniform_real_distribution.hpp>
@@ -317,6 +326,76 @@ bool colour_match(Vertex v1, Vertex v2, Graph H, Graph G, iso_params params) {
 
 //     return H;
 // }
+
+/**
+ * @param tree the pattern graph being considered (must be a tree on k vertices)
+ * @param colour_H the colourful vertex k-colouring of the vertices of the tree
+ * @param G the data graph
+ * @param colour_G an arbitrary k-colouring of vertices of G
+ * @return The number of colour-preserving isomorphisms between H and subgraphs of G.
+*/
+int tree_count(DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G) {
+
+    Vertex root = get_root(tree);
+    int targetColour = colour_H[root];
+
+    // search for targetColour in G to consider starting points
+
+     int total = 0;
+            typedef typename graph_traits<Graph>::vertex_iterator iter_v;
+            for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
+                if (colour_G[*p.first] == targetColour && *p.first != boost::num_vertices(G)) {
+                    total += count_tree(root, *p.first, tree, colour_H, G, colour_G);
+                }
+            }
+
+
+    return total;
+}
+
+int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G) {
+
+    // Count(r, mapped):
+    //      if r is a leaf node:
+    //          return 1
+    //      else:
+    //          for each child of r, denoted c:
+    //              current_count = count(c, i) for each i adjacent to mapped with colour equal to r
+    //          return product of current_counts
+
+    if (boost::out_degree(root, tree) == 0 ) { //leaf node
+        return 1;
+    }
+    
+    int combos = 1;
+    // iterate through children of r
+
+    typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
+    typename graph_traits<DiGraph>::out_edge_iterator target, target_end;
+
+    for(boost::tie(child, child_end) = boost::out_edges(root, tree); child != child_end; ++child) {
+        Vertex childVertex = boost::target(*child, tree);
+        int childColour = colour_H[childVertex];
+        int currentTotal = 0;
+        // iterate through adjacent vertices of rootMapped, look for vertices with childColour
+        for(boost::tie(target, target_end) = boost::out_edges(rootMapped, G); target != target_end; ++target) {
+            Vertex targetVertex = boost::target(*target, G);
+            int targetColour = colour_G[targetVertex];
+
+            if (targetColour == childColour) {
+                currentTotal += count_tree(childVertex, targetVertex, tree, colour_H, G, colour_G);
+            }
+        }
+
+        if (currentTotal == 0) {return 0;}
+
+        combos *= currentTotal;
+
+    }
+    
+    return combos;
+
+}
 
 /**
  * @param root A vertex of the root of the subtree of the nice tree decomposition we're considering. Its bag X_y has m vertices, with H_y being the subgraphs of H induced by all vertices in this subtree.
