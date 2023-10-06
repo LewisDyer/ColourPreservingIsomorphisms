@@ -372,6 +372,7 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
 
     for(boost::tie(child, child_end) = boost::out_edges(root, tree); child != child_end; ++child) {
         Vertex childVertex = boost::target(*child, tree);
+        int childDegree = boost::in_degree(childVertex, tree) + boost::out_degree(childVertex, tree);
         int childColour = colour_H[childVertex];
         int currentTotal = 0;
         //iterate through adjacent vertices of rootMapped, look for vertices with childColour
@@ -381,9 +382,11 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
         // Iterate through adjacent vertices
         for (Graph::adjacency_iterator neighbor = neighbors.first; neighbor != neighbors.second; ++neighbor) {
             Graph::vertex_descriptor adjacent_vertex = *neighbor;
+            if (boost::degree(adjacent_vertex, G) >= childDegree) {
             int targetColour = colour_G[adjacent_vertex];
             if (targetColour == childColour) {
                 currentTotal += count_tree(childVertex, adjacent_vertex, tree, colour_H, G, colour_G);
+            }
             }
             // Now 'adjacent_vertex' is a descriptor for an adjacent vertex of 'v'
             // You can perform operations on 'adjacent_vertex' here
