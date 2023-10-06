@@ -676,7 +676,7 @@ std::cout << "start method\n";
 DiGraph H = star<DiGraph>(4);
 
 //Graph G = uPath<Graph>(10);
-Graph G = erdos_renyi(30, 0.25);
+Graph G = erdos_renyi(1000, 0.25);
 
 //std::cout << "made random graph\n";
 //Graph G = path<Graph>(10);
