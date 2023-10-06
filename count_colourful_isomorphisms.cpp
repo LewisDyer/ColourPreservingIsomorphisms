@@ -76,6 +76,28 @@ G path(int n) {
 	return path;
 }
 
+template <class G>
+G star (int n) {
+    G star = DiGraph(n);
+
+    for (int i=1; i < n; i++) {
+        add_edge(0, i, star);
+    }
+
+    return star;
+}
+
+template <class G>
+G uPath(int n) {
+
+    G path = Graph(n);
+
+    for(int i=0; i < n-1; i++) {
+        add_edge(i, i+1, path);
+    }
+
+	return path;
+}
 
 /**
  * @param n, the number of vertices in the graph.
@@ -160,17 +182,18 @@ void save_graph(std::string filename, G & g) {
  * Note default behaviour for graphs with no sources is unimplemented.
  * 
 */
-template <typename DiGraph>
-Vertex get_root(const DiGraph& tree) {
-    typename boost::graph_traits<DiGraph>::vertex_iterator vi, vi_end;
-    for (boost::tie(vi, vi_end) = boost::vertices(graph); vi != vi_end; ++vi) {
-        // Check the in-degree of each vertex
-        if (boost::in_degree(*vi, graph) == 0) {
-            // Return the first vertex with in-degree 0 found
-            return *vi;
-        }
-    }
-}
+// Vertex get_root(DiGraph tree) {
+//     typedef typename graph_traits<DiGraph>::vertex_iterator vi;
+//     for (std::pair<vi, vi> ver = boost::vertices(tree); ver.first != ver.second; ++ver.first) {
+//         // Check the in-degree of each vertex
+//         if (boost::in_degree(*ver.first, tree) == 0) {
+//             // Return the first vertex with in-degree 0 found
+//             return *ver.first;
+//         }
+//     }
+
+//     return 0;
+// }
 
 
 
@@ -351,15 +374,20 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
         Vertex childVertex = boost::target(*child, tree);
         int childColour = colour_H[childVertex];
         int currentTotal = 0;
-        // iterate through adjacent vertices of rootMapped, look for vertices with childColour
-        // for(boost::tie(target, target_end) = boost::out_edges(rootMapped, G); target != target_end; ++target) {
-        //     Vertex targetVertex = boost::target(*target, G);
-        //     int targetColour = colour_G[targetVertex];
+        //iterate through adjacent vertices of rootMapped, look for vertices with childColour
+        
+        std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> neighbors = boost::adjacent_vertices(rootMapped, G);
 
-        //     if (targetColour == childColour) {
-        //         currentTotal += count_tree(childVertex, targetVertex, tree, colour_H, G, colour_G);
-        //     }
-        // }
+        // Iterate through adjacent vertices
+        for (Graph::adjacency_iterator neighbor = neighbors.first; neighbor != neighbors.second; ++neighbor) {
+            Graph::vertex_descriptor adjacent_vertex = *neighbor;
+            int targetColour = colour_G[adjacent_vertex];
+            if (targetColour == childColour) {
+                currentTotal += count_tree(childVertex, adjacent_vertex, tree, colour_H, G, colour_G);
+            }
+            // Now 'adjacent_vertex' is a descriptor for an adjacent vertex of 'v'
+            // You can perform operations on 'adjacent_vertex' here
+        }
 
         if (currentTotal == 0) {return 0;}
 
@@ -373,14 +401,15 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
 
 /**
  * @param tree the pattern graph being considered (must be a tree on k vertices)
+ * @param root The root of the tree
  * @param colour_H the colourful vertex k-colouring of the vertices of the tree
  * @param G the data graph
  * @param colour_G an arbitrary k-colouring of vertices of G
  * @return The number of colour-preserving isomorphisms between H and subgraphs of G.
 */
-int tree_count(DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G) {
+int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G) {
 
-    Vertex root = get_root(tree);
+    //Vertex root = get_root(tree);
     int targetColour = colour_H[root];
 
     // search for targetColour in G to consider starting points
@@ -644,10 +673,10 @@ int main() {
 
 std::cout << "start method\n";
 
-DiGraph H = path<DiGraph>(5);
+DiGraph H = star<DiGraph>(4);
 
-
-Graph G = erdos_renyi(1000, 0.25);
+//Graph G = uPath<Graph>(10);
+Graph G = erdos_renyi(30, 0.25);
 
 //std::cout << "made random graph\n";
 //Graph G = path<Graph>(10);
@@ -664,10 +693,17 @@ for(int i=0; i < boost::num_vertices(H); i++) {
 
 ColourMap colour_H(col_H);
 
+save_graph("H_coloured.dot", H);
+
 Colours col_G;
 
+boost::random::mt19937 gen;
+gen.seed(std::time(0));
+
+boost::random::uniform_int_distribution<> dis(0, boost::num_vertices(H)-1);
+
 for(int i=0; i < boost::num_vertices(G); i++) {
-    col_G[i] = i % 5;
+    col_G[i] = dis(gen);
 }
 
 // for(int i=0; i < boost::num_vertices(G); i++) {
@@ -697,6 +733,8 @@ for(int i=0; i < boost::num_vertices(G); i++) {
 
 ColourMap colour_G(col_G);
 
+save_graph("G_coloured.dot", G, colour_G);
+
 //save_graph("H_colour.dot", H, colour_H);
 
 //save_graph("G_colour.dot", G, colour_G);
@@ -705,7 +743,7 @@ ColourMap colour_G(col_G);
 
 // int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G, false);
 
-int count = tree_count(H, colour_H, G, colour_G);
+int count = tree_count(H, 0, colour_H, G, colour_G);
 
 std::cout << "NUMBER OF CPIs IS " << count;
 
