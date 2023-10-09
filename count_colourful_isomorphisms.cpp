@@ -50,13 +50,13 @@ using DiGraph = adjacency_list<listS, vecS, bidirectionalS, property<vertex_name
 using Vertex =  graph_traits<DiGraph>::vertex_descriptor;
 using Edge = graph_traits<DiGraph>::edge_descriptor;
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
-using BagsMap = std::map<Vertex, std::set<Vertex>>;
-using DecompositionBags = associative_property_map<BagsMap>;
+//using BagsMap = std::map<Vertex, std::set<Vertex>>;
+//using DecompositionBags = associative_property_map<BagsMap>;
 using Colours= std::map<Vertex, int>;
 using ColourMap = associative_property_map<Colours>;
 
-# include "tree_decomposition.hpp"
-# include "nice_tree_decomposition.hpp"
+//# include "tree_decomposition.hpp"
+//# include "nice_tree_decomposition.hpp"
 //# include "graph_utils.h"
 # include "graph_generators.h"
 
@@ -115,26 +115,26 @@ G clique(int n) {
     return clique;
 }
 
-namespace std {
-	template <class T>
-    // Function to print out a set
-	std::ostream& operator<< (std::ostream& os, const std::set<T> & in) {
-		os << "[";
-		for (auto it = in.begin(); it != in.end(); it++) {
-            if (it != in.begin()) os << ",";
-            os << *it;
-        }
-        os << "]";
+// namespace std {
+// 	template <class T>
+//     // Function to print out a set
+// 	std::ostream& operator<< (std::ostream& os, const std::set<T> & in) {
+// 		os << "[";
+// 		for (auto it = in.begin(); it != in.end(); it++) {
+//             if (it != in.begin()) os << ",";
+//             os << *it;
+//         }
+//         os << "]";
 
-		return os;
-	}
-}
+// 		return os;
+// 	}
+// }
 
-void output_bags(Graph G, DecompositionBags bags_pm) {
-    for(int i=0; i < boost::num_vertices(G); i++) {
-        std::cout << i << ": " << bags_pm[i] << "\n";
-    }
-}
+// void output_bags(Graph G, DecompositionBags bags_pm) {
+//     for(int i=0; i < boost::num_vertices(G); i++) {
+//         std::cout << i << ": " << bags_pm[i] << "\n";
+//     }
+// }
 
 Graph erdos_renyi(int n, double p) {
     Graph g(n);
@@ -197,35 +197,35 @@ void save_graph(std::string filename, G & g) {
 
 
 
-enum VertexType {leaf, join, forget, introduce};
-const char* node_type[4] = {"leaf", "join", "forget", "introduce"};
+// enum VertexType {leaf, join, forget, introduce};
+// const char* node_type[4] = {"leaf", "join", "forget", "introduce"};
 
-/**
- * @param v the vertex we're considering in the nice tree decomposition
- * @param tree the nice tree decomposition containing v
- * @param bags the property map of bags in the tree
- * @return The type of vertex that v is in tree (either leaf, join, forget or introduce) 
-*/
-VertexType getNiceType(const Vertex& v, const DiGraph& tree, DecompositionBags bags) {
-    // Count children
-    // If 0 children, return LEAF
-    // If 2 children, return JOIN
-    // Then compare bag of v and the bag of child of v
-    // If v's bag is bigger return FORGET, else return INTRODUCE
+// /**
+//  * @param v the vertex we're considering in the nice tree decomposition
+//  * @param tree the nice tree decomposition containing v
+//  * @param bags the property map of bags in the tree
+//  * @return The type of vertex that v is in tree (either leaf, join, forget or introduce) 
+// */
+// VertexType getNiceType(const Vertex& v, const DiGraph& tree, DecompositionBags bags) {
+//     // Count children
+//     // If 0 children, return LEAF
+//     // If 2 children, return JOIN
+//     // Then compare bag of v and the bag of child of v
+//     // If v's bag is bigger return FORGET, else return INTRODUCE
 
-    switch(boost::out_degree(v, tree)) {
-        case 0: { return leaf; break; }
-        case 2: { return join; break; }
-        case 1: {
-            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
-            boost::tie(child, child_end) = out_edges(v, tree);
-            VertexType type = (size(bags[v]) > size(bags[boost::target(*child, tree)])) ? introduce : forget;
-            return type;
-            break;
-        }
-        default: { return leaf; break; }
-    }
-}
+//     switch(boost::out_degree(v, tree)) {
+//         case 0: { return leaf; break; }
+//         case 2: { return join; break; }
+//         case 1: {
+//             typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
+//             boost::tie(child, child_end) = out_edges(v, tree);
+//             VertexType type = (size(bags[v]) > size(bags[boost::target(*child, tree)])) ? introduce : forget;
+//             return type;
+//             break;
+//         }
+//         default: { return leaf; break; }
+//     }
+// }
 
 // Graph induced_subgraph(Graph G, std::set<Vertex> V) {
 //     Graph S(V.size());
@@ -245,110 +245,110 @@ VertexType getNiceType(const Vertex& v, const DiGraph& tree, DecompositionBags b
 //     return S;
 // }
 
-struct iso_params {
-    std::map<Vertex, Vertex> H_index_map;
-    std::map<Vertex, Vertex> G_index_map;
-    ColourMap colour_H;
-    ColourMap colour_G;
-};
+// struct iso_params {
+//     std::map<Vertex, Vertex> H_index_map;
+//     std::map<Vertex, Vertex> G_index_map;
+//     ColourMap colour_H;
+//     ColourMap colour_G;
+// };
 
-/**
- * @param v1 a vertex in H
- * @param v2 a vertex in G
- * @param H a subgraph of the pattern graph
- * @param G a subgraph of the data graph
- * @param params a struct containing H_index_map, sending the logical representatives of the subgraph of H to the graph representation, and G_index_map which does the opposite for G
- * Also colour_H and colour_G, which map logical representatives of H and G respectively to their colours.
- * @return true if v1 and v2 have the same colour, false if they don't.
-*/
-bool colour_match(Vertex v1, Vertex v2, Graph H, Graph G, iso_params params) {
+// /**
+//  * @param v1 a vertex in H
+//  * @param v2 a vertex in G
+//  * @param H a subgraph of the pattern graph
+//  * @param G a subgraph of the data graph
+//  * @param params a struct containing H_index_map, sending the logical representatives of the subgraph of H to the graph representation, and G_index_map which does the opposite for G
+//  * Also colour_H and colour_G, which map logical representatives of H and G respectively to their colours.
+//  * @return true if v1 and v2 have the same colour, false if they don't.
+// */
+// bool colour_match(Vertex v1, Vertex v2, Graph H, Graph G, iso_params params) {
 
-    std::map<Vertex, Vertex> rev_H_index; // from graph rep of sub(H) to logical rep of sub(H);
+//     std::map<Vertex, Vertex> rev_H_index; // from graph rep of sub(H) to logical rep of sub(H);
 
-    for (auto pair: params.H_index_map) {
-            rev_H_index[pair.second] = pair.first;
-        }
+//     for (auto pair: params.H_index_map) {
+//             rev_H_index[pair.second] = pair.first;
+//         }
 
-    int H_colour = params.colour_H[rev_H_index[v1]];
-    int G_colour = params.colour_H[params.G_index_map[v2]];
+//     int H_colour = params.colour_H[rev_H_index[v1]];
+//     int G_colour = params.colour_H[params.G_index_map[v2]];
 
-    return (H_colour == G_colour);
+//     return (H_colour == G_colour);
 
-}
+// }
 
- std::pair<Graph, std::map<Vertex, Vertex>> induced_subgraph(Graph G, std::set<Vertex> V, bool inverseMap) {
+//  std::pair<Graph, std::map<Vertex, Vertex>> induced_subgraph(Graph G, std::set<Vertex> V, bool inverseMap) {
 
-    std::map<Vertex, Vertex> index_map;
+//     std::map<Vertex, Vertex> index_map;
 
-    if (V.empty()) { Graph H(0); return std::make_pair(H, index_map);}
-    Graph H;
+//     if (V.empty()) { Graph H(0); return std::make_pair(H, index_map);}
+//     Graph H;
 
 
-    int i = 0;
-    for (Vertex u:V) {
+//     int i = 0;
+//     for (Vertex u:V) {
 
-        // std::cout << "add vertex " << u << "\n";
-        add_vertex(u, H);
-        index_map[u] = i;
-        ++i;
-    }
+//         // std::cout << "add vertex " << u << "\n";
+//         add_vertex(u, H);
+//         index_map[u] = i;
+//         ++i;
+//     }
 
-    //for(auto v: index_map) {std::cout << v.first << " -> " << v.second << "\n";}
-    //std::cout << "----\n";
+//     //for(auto v: index_map) {std::cout << v.first << " -> " << v.second << "\n";}
+//     //std::cout << "----\n";
 
-    // std::cout << "# of vertices in graph: " << num_vertices(H) << "\n";
+//     // std::cout << "# of vertices in graph: " << num_vertices(H) << "\n";
 
-    for (Vertex u: V) {
-        for (auto e: make_iterator_range(out_edges(u,G))) {
-            Vertex v = target(e, G);
-            //std::cout << "checking edge (" << index_map[u] << ", " << index_map[v] << ")\n";
-            //std::cout << "without index_map it's (" << u << ", " << v << ")\n";
+//     for (Vertex u: V) {
+//         for (auto e: make_iterator_range(out_edges(u,G))) {
+//             Vertex v = target(e, G);
+//             //std::cout << "checking edge (" << index_map[u] << ", " << index_map[v] << ")\n";
+//             //std::cout << "without index_map it's (" << u << ", " << v << ")\n";
             
-            if (find(V.begin(), V.end(), v) != V.end()) {
-                if (u < v) {
+//             if (find(V.begin(), V.end(), v) != V.end()) {
+//                 if (u < v) {
 
-                // std::cout << "add edge (" << index_map[u] << ", " << index_map[v] << ")\n";
+//                 // std::cout << "add edge (" << index_map[u] << ", " << index_map[v] << ")\n";
 
-                add_edge(index_map[u], index_map[v], H);
+//                 add_edge(index_map[u], index_map[v], H);
 
-            }
-            }
-        }
-    }
+//             }
+//             }
+//         }
+//     }
 
-    if (!inverseMap) {
-        return std::make_pair(H, index_map);
+//     if (!inverseMap) {
+//         return std::make_pair(H, index_map);
 
-    } else {
-        std::map<Vertex, Vertex> reverse_map;
+//     } else {
+//         std::map<Vertex, Vertex> reverse_map;
 
-        for (auto pair: index_map) {
-            reverse_map[pair.second] = pair.first;
-        }
+//         for (auto pair: index_map) {
+//             reverse_map[pair.second] = pair.first;
+//         }
 
-        return std::make_pair(H, reverse_map);
-    }
+//         return std::make_pair(H, reverse_map);
+//     }
 
     
- }
+//  }
 
-//     boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
-//     if (boost::num_vertices(H) <= 1) {return H;}
+// //     boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
+// //     if (boost::num_vertices(H) <= 1) {return H;}
 
-//     boost::tie(vi, vi_end) = boost::vertices(H);
-//     for(next=vi; vi != vi_end; vi=next) {
-//         if (boost::degree(*vi, H) == 0) {
-//             boost::remove_vertex(*vi, H);
-//         }
-//         ++next;
-//     }
+// //     boost::tie(vi, vi_end) = boost::vertices(H);
+// //     for(next=vi; vi != vi_end; vi=next) {
+// //         if (boost::degree(*vi, H) == 0) {
+// //             boost::remove_vertex(*vi, H);
+// //         }
+// //         ++next;
+// //     }
 
-//     if (boost::degree(0, H) == 0) {
-//         boost::remove_vertex(0, H);
-//     }
+// //     if (boost::degree(0, H) == 0) {
+// //         boost::remove_vertex(0, H);
+// //     }
 
-//     return H;
-// }
+// //     return H;
+// // }
 
 int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G) {
 
@@ -385,8 +385,6 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
             int targetColour = colour_G[adjacent_vertex];
             if (targetColour == childColour) {
                 int targetDegree = boost::degree(adjacent_vertex, G);
-                std::cout << "child degree is " << childDegree << "\n";
-                std::cout << "target degree is " << targetDegree << "\n";
                 if (targetDegree >= childDegree) { // degree filtering to avoid checking impossible matches
                 currentTotal += count_tree(childVertex, adjacent_vertex, tree, colour_H, G, colour_G);
                 } else {
@@ -417,6 +415,7 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
 
     //Vertex root = get_root(tree);
     int targetColour = colour_H[root];
+    int rootDegree = boost::degree(root, tree);
 
     // search for targetColour in G to consider starting points
 
@@ -424,7 +423,9 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
             typedef typename graph_traits<Graph>::vertex_iterator iter_v;
             for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
                 if (colour_G[*p.first] == targetColour && *p.first != boost::num_vertices(G)) {
+                    if (boost::degree(*p.first, G) >= rootDegree) {
                     total += count_tree(root, *p.first, tree, colour_H, G, colour_G);
+                }
                 }
             }
 
@@ -446,182 +447,182 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
  * @param isCounting True for counting, false for just deciding.
  * @return The number of colour-preserving isomorphisms between subgraphs of G and H_y that extend colour-preserving isomorphisms between K and X_y. If no such isomorphisms exist between K and X_y, return 0.
 */
-int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G, bool isCounting) {
-    // Get the vertices in the root bag
-    // Get the subgraph of H induced by these vertices
+// int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Graph G, DecompositionBags bags,  ColourMap colour_H, ColourMap colour_G, bool isCounting) {
+//     // Get the vertices in the root bag
+//     // Get the subgraph of H induced by these vertices
 
-    //std::cout <<"=====NEW VERTEX=====\n";
+//     //std::cout <<"=====NEW VERTEX=====\n";
 
-    std::set<Vertex> root_vertices = bags[root];
+//     std::set<Vertex> root_vertices = bags[root];
 
-   //std::cout << "root is " << root_vertices << "\n";
+//    //std::cout << "root is " << root_vertices << "\n";
 
-    //std::cout << "K is " << K << "\n";
+//     //std::cout << "K is " << K << "\n";
 
-    std::map<Vertex, Vertex> index_map_H, index_map_G;
-    Graph Xy, Gk;
+//     std::map<Vertex, Vertex> index_map_H, index_map_G;
+//     Graph Xy, Gk;
 
 
-    boost::tie(Xy, index_map_H) = induced_subgraph(H, root_vertices, false);
-    boost::tie(Gk, index_map_G) = induced_subgraph(G, K, true);
+//     boost::tie(Xy, index_map_H) = induced_subgraph(H, root_vertices, false);
+//     boost::tie(Gk, index_map_G) = induced_subgraph(G, K, true);
 
     
 
-    //save_graph("Test_Xy.dot", Xy);
+//     //save_graph("Test_Xy.dot", Xy);
 
-    //save_graph("Test_Gk.dot", Gk);
+//     //save_graph("Test_Gk.dot", Gk);
 
-    std::vector<Vertex> iso(num_vertices(H));
+//     std::vector<Vertex> iso(num_vertices(H));
 
-    //std::cout << root_vertices << " in H iso. to " << K << " in G? ";
+//     //std::cout << root_vertices << " in H iso. to " << K << " in G? ";
 
-    bool areIsomorphic;
+//     bool areIsomorphic;
 
-    // trying to do isomorphism checks with empty graphs causes early termination
-    if ((num_vertices(Xy) == 0) && (num_vertices(Gk) == 0)) {
-        areIsomorphic = true;
-    } else if ((num_vertices(Xy) == 0) || (num_vertices(Gk) == 0)) {
-        areIsomorphic = false;
-    } else if ((num_vertices(Xy) == 1) && (num_vertices(Gk) == 1)) {
-        // NOTE will need to refactor this for colour checking too
-        areIsomorphic = true;
-        Vertex y = *(root_vertices.begin());
-        Vertex k = *(K.begin());
-        iso[y] = k;
-    } else {
-        // NOTE this doesn't check colour-preserving isomorphisms yet!
-        //areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy))));
-        iso_params params;
-        params.G_index_map = index_map_G;
-        params.H_index_map = index_map_H;
-        params.colour_G = colour_G;
-        params.colour_H = colour_H;
+//     // trying to do isomorphism checks with empty graphs causes early termination
+//     if ((num_vertices(Xy) == 0) && (num_vertices(Gk) == 0)) {
+//         areIsomorphic = true;
+//     } else if ((num_vertices(Xy) == 0) || (num_vertices(Gk) == 0)) {
+//         areIsomorphic = false;
+//     } else if ((num_vertices(Xy) == 1) && (num_vertices(Gk) == 1)) {
+//         // NOTE will need to refactor this for colour checking too
+//         areIsomorphic = true;
+//         Vertex y = *(root_vertices.begin());
+//         Vertex k = *(K.begin());
+//         iso[y] = k;
+//     } else {
+//         // NOTE this doesn't check colour-preserving isomorphisms yet!
+//         //areIsomorphic = boost::isomorphism(Xy, Gk, isomorphism_map(make_iterator_property_map(iso.begin(), get(vertex_index, Xy))));
+//         iso_params params;
+//         params.G_index_map = index_map_G;
+//         params.H_index_map = index_map_H;
+//         params.colour_G = colour_G;
+//         params.colour_H = colour_H;
 
-        areIsomorphic = boost::isomorphism(Xy, Gk, boost::vertex_invariant(boost::bind(colour_match, _1, _2, boost::ref(Xy), boost::ref(Gk), boost::ref(params))));
-    }
+//         areIsomorphic = boost::isomorphism(Xy, Gk, boost::vertex_invariant(boost::bind(colour_match, _1, _2, boost::ref(Xy), boost::ref(Gk), boost::ref(params))));
+//     }
 
-    if (!areIsomorphic) { return 0; }
+//     if (!areIsomorphic) { return 0; }
 
-   //std::cout << "Yes\n=====\n";
+//    //std::cout << "Yes\n=====\n";
 
-    //for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
+//     //for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << iso[i] << "\n"; }
     
     
 
-    //for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << index_map_G[iso[i]] << "\n"; }
+//     //for (int i=0; i < iso.size(); i++) { std::cout << i << " maps to " << index_map_G[iso[i]] << "\n"; }
      
-    // // Check the type of the root node in the tree ("leaf"/"join"/"forget"/"introduce")
+//     // // Check the type of the root node in the tree ("leaf"/"join"/"forget"/"introduce")
 
-     VertexType root_type = getNiceType(root, tree, bags);
+//      VertexType root_type = getNiceType(root, tree, bags);
 
-     //std::cout << "root type is " << node_type[root_type] << "\n" ;
+//      //std::cout << "root type is " << node_type[root_type] << "\n" ;
 
-     switch(root_type) {
-        case leaf: {
-            return 1;
-            break;
-        }
-        case join: {
+//      switch(root_type) {
+//         case leaf: {
+//             return 1;
+//             break;
+//         }
+//         case join: {
             
-            int count = 0;
-            Vertex child1, child2;
+//             int count = 0;
+//             Vertex child1, child2;
 
-            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
+//             typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
 
-            boost::tie(child, child_end) = boost::out_edges(root,tree);
-            child1 = boost::target(*child, tree);
+//             boost::tie(child, child_end) = boost::out_edges(root,tree);
+//             child1 = boost::target(*child, tree);
 
-            ++child;
-            child2 = boost::target(*child, tree);
+//             ++child;
+//             child2 = boost::target(*child, tree);
 
-            if (isCounting) {
-            return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G, isCounting) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G, isCounting));
-            } else {
-                if (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G, isCounting) > 0) {
-                    return colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G, isCounting);
-                } else {
-                    return 0;
-                }
-            }
-            break;
-        }
-        case forget: {
+//             if (isCounting) {
+//             return (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G, isCounting) * colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G, isCounting));
+//             } else {
+//                 if (colourful_count(child1, tree, K, H, G, bags, colour_H, colour_G, isCounting) > 0) {
+//                     return colourful_count(child2, tree, K, H, G, bags, colour_H, colour_G, isCounting);
+//                 } else {
+//                     return 0;
+//                 }
+//             }
+//             break;
+//         }
+//         case forget: {
 
-            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
-            boost::tie(child, child_end) = boost::out_edges(root, tree);
+//             typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
+//             boost::tie(child, child_end) = boost::out_edges(root, tree);
 
-            Vertex child1 = boost::target(*child, tree);
+//             Vertex child1 = boost::target(*child, tree);
 
-            //Get the colour of the new vertex in this node
-            std::set<Vertex> diff;
-            std::set_difference(get(bags, child1).begin(), get(bags, child1).end(), get(bags, root).begin(), get(bags, root).end(), std::inserter(diff, diff.begin()));
-            Vertex new_v = *(diff.begin());
-            int colour = colour_H[new_v];
+//             //Get the colour of the new vertex in this node
+//             std::set<Vertex> diff;
+//             std::set_difference(get(bags, child1).begin(), get(bags, child1).end(), get(bags, root).begin(), get(bags, root).end(), std::inserter(diff, diff.begin()));
+//             Vertex new_v = *(diff.begin());
+//             int colour = colour_H[new_v];
 
-            // Iterate over vertices in G and check their colour - branch on all vertices with the same colour as the new vertex.
+//             // Iterate over vertices in G and check their colour - branch on all vertices with the same colour as the new vertex.
 
-            int total = 0;
-            typedef typename graph_traits<Graph>::vertex_iterator iter_v;
-            for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
-                if (colour_G[*p.first] == colour && *p.first != boost::num_vertices(G)) {
-                    //std::cout << "try mapping " << new_v << " to " << *p.first << "\n";
-                    std::set<Vertex> new_K;
-                    std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
-                    new_K.insert(*p.first);
-                    if (isCounting) { total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting); }
-                    else if (colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting) > 0) {return 1;}
-                }
-            }
+//             int total = 0;
+//             typedef typename graph_traits<Graph>::vertex_iterator iter_v;
+//             for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
+//                 if (colour_G[*p.first] == colour && *p.first != boost::num_vertices(G)) {
+//                     //std::cout << "try mapping " << new_v << " to " << *p.first << "\n";
+//                     std::set<Vertex> new_K;
+//                     std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
+//                     new_K.insert(*p.first);
+//                     if (isCounting) { total += colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting); }
+//                     else if (colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting) > 0) {return 1;}
+//                 }
+//             }
 
-            return total;
-            break;
-        }
-        case introduce: {
+//             return total;
+//             break;
+//         }
+//         case introduce: {
 
-            typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
-            boost::tie(child, child_end) = boost::out_edges(root, tree);
+//             typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
+//             boost::tie(child, child_end) = boost::out_edges(root, tree);
 
-            Vertex child1 = boost::target(*child, tree);
+//             Vertex child1 = boost::target(*child, tree);
 
-            std::set<Vertex> diff;
-            std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
-            Vertex forgotten_v = *(diff.begin());
-
-
-            // Given a vertex in Xy: get its representation in the subgraph variable, then the vertex it's mapped to in the representation of GK,
-            // then the actual logical representation of GK.
-            int prev_target = index_map_G[iso[index_map_H[forgotten_v]]];
-            // Not the most efficient, but size of this is bounded by size of H so not too bad
-            // for(int i=0; i < iso.size(); i++) {
-            //     if(iso[i] == forgotten_v) {
-            //         prev_target = iso[i];
-            //         break;
-            //     }
-            // }
-
-            //std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
-            std::set<Vertex> new_K;
-            std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
-            new_K.erase(prev_target);
-            return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting);
-            break;
-        }
-        default: {
-            std::cout << "default type (you should never see this!)\n";
-            return 0;
-            break;
-        }
-    }
-
-    // If "leaf", return 1
-    // If "join", return product of counts rooted children, use the same K
-    // If "forget", get the colour of the new node added in the child. Then iterate
-    // over all nodes in G with the same colour, and branch here to recurse rooting on the child with all possible extensions to K.
-    // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
+//             std::set<Vertex> diff;
+//             std::set_difference(get(bags, root).begin(), get(bags, root).end(), get(bags, child1).begin(), get(bags, child1).end(), std::inserter(diff, diff.begin()));
+//             Vertex forgotten_v = *(diff.begin());
 
 
-    return 1;
-}
+//             // Given a vertex in Xy: get its representation in the subgraph variable, then the vertex it's mapped to in the representation of GK,
+//             // then the actual logical representation of GK.
+//             int prev_target = index_map_G[iso[index_map_H[forgotten_v]]];
+//             // Not the most efficient, but size of this is bounded by size of H so not too bad
+//             // for(int i=0; i < iso.size(); i++) {
+//             //     if(iso[i] == forgotten_v) {
+//             //         prev_target = iso[i];
+//             //         break;
+//             //     }
+//             // }
+
+//             //std::cout << "dropping vertex " << forgotten_v << " which was mapped to " << prev_target << "\n";
+//             std::set<Vertex> new_K;
+//             std::copy(K.begin(), K.end(), std::inserter(new_K, new_K.begin()));
+//             new_K.erase(prev_target);
+//             return colourful_count(child1, tree, new_K, H, G, bags, colour_H, colour_G, isCounting);
+//             break;
+//         }
+//         default: {
+//             std::cout << "default type (you should never see this!)\n";
+//             return 0;
+//             break;
+//         }
+//     }
+
+//     // If "leaf", return 1
+//     // If "join", return product of counts rooted children, use the same K
+//     // If "forget", get the colour of the new node added in the child. Then iterate
+//     // over all nodes in G with the same colour, and branch here to recurse rooting on the child with all possible extensions to K.
+//     // If "introduce", find the vertex that was removed in the child, find its colour, then remove the vertex in K with that colour and recurse from the child.
+
+
+//     return 1;
+// }
 
 /**
  * @param H the pattern graph.
@@ -631,36 +632,36 @@ int colourful_count(Vertex root, DiGraph tree, std::set<Vertex> K, Graph H, Grap
  * @param isCounting True if we want to count CPIs, False if we just want to check if any exist.
  * @return The number of subgraphs of G isomorphic to H and preserving vertex colourings
 */
-int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, ColourMap colour_G, bool isCounting) {
-    // get a tree decomposition of H
-    // make it nice, and get its root
-    // inner recursive function (see colourful_count)
+// int count_colour_preserving_isomorphisms(Graph H, Graph G, ColourMap colour_H, ColourMap colour_G, bool isCounting) {
+//     // get a tree decomposition of H
+//     // make it nice, and get its root
+//     // inner recursive function (see colourful_count)
 
-    DiGraph dec;
-    BagsMap bags_m;
-    DecompositionBags bags_pm(bags_m);
+//     DiGraph dec;
+//     BagsMap bags_m;
+//     DecompositionBags bags_pm(bags_m);
     
-    bool x = boost::tree_decomposition(H, dec, bags_pm, 1);
+//     bool x = boost::tree_decomposition(H, dec, bags_pm, 1);
 
-    //std::cout << "initial decomposition fine\n";
+//     //std::cout << "initial decomposition fine\n";
 
-    DiGraph tree;
-    BagsMap nice_bags_m;
-    DecompositionBags bags(nice_bags_m);
+//     DiGraph tree;
+//     BagsMap nice_bags_m;
+//     DecompositionBags bags(nice_bags_m);
 
-    Vertex root = boost::nice_tree_decomposition(dec, bags_pm, tree, bags);
+//     Vertex root = boost::nice_tree_decomposition(dec, bags_pm, tree, bags);
 
-    //("test_nice_dec.dot", tree, bags);
+//     //("test_nice_dec.dot", tree, bags);
 
-    // for(int i=0; i < boost::num_vertices(tree); i++) {
-    //     std::cout << "vertex " << i << " has node type " << node_type[getNiceType(i, tree, bags)] << "\n";
-    // }
+//     // for(int i=0; i < boost::num_vertices(tree); i++) {
+//     //     std::cout << "vertex " << i << " has node type " << node_type[getNiceType(i, tree, bags)] << "\n";
+//     // }
 
-    //root always has empty bags, so K starts empty
-    std::set<Vertex> K;
-    return colourful_count(root, tree, K, H, G, bags, colour_H, colour_G, isCounting);
-    //return 1;
-}
+//     //root always has empty bags, so K starts empty
+//     std::set<Vertex> K;
+//     return colourful_count(root, tree, K, H, G, bags, colour_H, colour_G, isCounting);
+//     //return 1;
+// }
 
 
 int main() {
