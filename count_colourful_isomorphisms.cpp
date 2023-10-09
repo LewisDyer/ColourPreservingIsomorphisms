@@ -46,7 +46,7 @@
 # include <iostream>
 
 using namespace boost;
-using DiGraph = adjacency_list<listS, vecS, directedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
+using DiGraph = adjacency_list<listS, vecS, bidirectionalS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex =  graph_traits<DiGraph>::vertex_descriptor;
 using Edge = graph_traits<DiGraph>::edge_descriptor;
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
@@ -372,7 +372,7 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
 
     for(boost::tie(child, child_end) = boost::out_edges(root, tree); child != child_end; ++child) {
         Vertex childVertex = boost::target(*child, tree);
-        int childDegree = boost::in_degree(childVertex, tree) + boost::out_degree(childVertex, tree);
+        int childDegree = boost::degree(childVertex, tree);
         int childColour = colour_H[childVertex];
         int currentTotal = 0;
         //iterate through adjacent vertices of rootMapped, look for vertices with childColour
@@ -382,14 +382,17 @@ int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H,
         // Iterate through adjacent vertices
         for (Graph::adjacency_iterator neighbor = neighbors.first; neighbor != neighbors.second; ++neighbor) {
             Graph::vertex_descriptor adjacent_vertex = *neighbor;
-            if (boost::degree(adjacent_vertex, G) >= childDegree) {
             int targetColour = colour_G[adjacent_vertex];
             if (targetColour == childColour) {
+                int targetDegree = boost::degree(adjacent_vertex, G);
+                std::cout << "child degree is " << childDegree << "\n";
+                std::cout << "target degree is " << targetDegree << "\n";
+                if (targetDegree >= childDegree) { // degree filtering to avoid checking impossible matches
                 currentTotal += count_tree(childVertex, adjacent_vertex, tree, colour_H, G, colour_G);
+                } else {
+                    std::cout << "avoided due to degree filtering \n";
+                }
             }
-            }
-            // Now 'adjacent_vertex' is a descriptor for an adjacent vertex of 'v'
-            // You can perform operations on 'adjacent_vertex' here
         }
 
         if (currentTotal == 0) {return 0;}
@@ -679,7 +682,7 @@ std::cout << "start method\n";
 DiGraph H = star<DiGraph>(4);
 
 //Graph G = uPath<Graph>(10);
-Graph G = erdos_renyi(1000, 0.25);
+Graph G = erdos_renyi(50, 0.25);
 
 //std::cout << "made random graph\n";
 //Graph G = path<Graph>(10);
