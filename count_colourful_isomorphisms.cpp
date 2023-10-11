@@ -30,6 +30,7 @@
 
 # include <set>
 # include <list>
+# include <queue>
 # include <cmath>
 # include <boost/graph/adjacency_list.hpp>
 # include <boost/tuple/tuple.hpp>
@@ -43,6 +44,7 @@
 # include <boost/random/uniform_int_distribution.hpp>
 # include <boost/random/uniform_real_distribution.hpp>
 # include <boost/random/mersenne_twister.hpp>
+# include <boost/graph/breadth_first_search.hpp>
 # include <iostream>
 
 using namespace boost;
@@ -78,7 +80,7 @@ G path(int n) {
 
 template <class G>
 G star (int n) {
-    G star = DiGraph(n);
+    G star = Graph(n);
 
     for (int i=1; i < n; i++) {
         add_edge(0, i, star);
@@ -153,6 +155,31 @@ Graph erdos_renyi(int n, double p) {
     }
 
     return g;
+}
+
+DiGraph makeRooted(const Graph& G, Vertex root) {
+    DiGraph d;
+    std::vector<bool> visited(boost::num_vertices(G), false);
+    std::queue<int> q;
+
+    visited[root] = true;
+    q.push(root);
+
+    while (!q.empty()) {
+        int currentVertex = q.front();
+        q.pop();
+
+        Graph::adjacency_iterator vi, vi_end;
+        for (boost::tie(vi, vi_end) = boost::adjacent_vertices(currentVertex, G); vi != vi_end; ++vi) {
+            if (!visited[*vi]) {
+                visited[*vi] = true;
+                q.push(*vi);
+                boost::add_edge(currentVertex, *vi, d);
+            }
+        }
+    }
+
+    return d;
 }
 
 
@@ -680,7 +707,9 @@ int main() {
 
 std::cout << "start method\n";
 
-DiGraph H = star<DiGraph>(4);
+Graph uStar = star<Graph>(4);
+
+DiGraph H = makeRooted(uStar, 1);
 
 //Graph G = uPath<Graph>(10);
 Graph G = erdos_renyi(50, 0.25);
