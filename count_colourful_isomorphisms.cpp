@@ -694,8 +694,7 @@ int fact(int n) {
     return n <= 1 ? n : n * fact(n-1);
 }
 
-
-int main() {
+void test() {
 
 // Graph h = path(5);
 // std::set<Vertex> V;
