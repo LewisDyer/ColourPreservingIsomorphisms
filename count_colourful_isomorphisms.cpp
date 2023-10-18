@@ -690,6 +690,10 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
 //     //return 1;
 // }
 
+int fact(int n) {
+    return n <= 1 ? n : n * fact(n-1);
+}
+
 
 int main() {
 
