@@ -60,7 +60,7 @@ using ColourMap = associative_property_map<Colours>;
 //# include "tree_decomposition.hpp"
 //# include "nice_tree_decomposition.hpp"
 //# include "graph_utils.h"
-# include "graph_generators.h"
+//# include "graph_generators.cpp"
 
 /**
  * @param n, the number of vertices in the graph.
@@ -89,33 +89,21 @@ G star (int n) {
     return star;
 }
 
-template <class G>
-G uPath(int n) {
-
-    G path = Graph(n);
-
-    for(int i=0; i < n-1; i++) {
-        add_edge(i, i+1, path);
-    }
-
-	return path;
-}
-
 /**
  * @param n, the number of vertices in the graph.
  * @return A clique on n vertices. 
 */
-template <class G>
-G clique(int n) {
-    G clique = Graph(n);
-    for(int i=0; i < n; i++) {
-        for (int j=0; j < i; j++) {
-            add_edge(i, j, clique);
-        }    
-    }
+// template <class G>
+// G clique(int n) {
+//     G clique = Graph(n);
+//     for(int i=0; i < n; i++) {
+//         for (int j=0; j < i; j++) {
+//             add_edge(i, j, clique);
+//         }    
+//     }
 
-    return clique;
-}
+//     return clique;
+// }
 
 // namespace std {
 // 	template <class T>
@@ -690,10 +678,6 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
 //     //return 1;
 // }
 
-int fact(int n) {
-    return n <= 1 ? n : n * fact(n-1);
-}
-
 void test() {
 
 // Graph h = path(5);
@@ -787,3 +771,5 @@ int count = tree_count(H, 0, colour_H, G, colour_G);
 std::cout << "NUMBER OF CPIs IS " << count;
 
 }
+
+int main() {}
