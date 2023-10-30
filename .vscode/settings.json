@@ -90,6 +90,8 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "cinttypes": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "regex": "cpp",
+        "future": "cpp"
     }
 }

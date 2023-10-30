@@ -448,6 +448,83 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
     return total;
 }
 
+struct HeightVisitor : public boost::default_dfs_visitor {
+    HeightVisitor(std::vector<int>& heights, const DiGraph& g)
+        : heights(heights), graph(g) {}
+
+    template <typename Vertex, typename Graph>
+    void discover_vertex(Vertex u, const Graph& g) {
+        for (auto it = boost::adjacent_vertices(u, graph); it.first != it.second; ++it.first) {
+            Vertex v = *it.first;
+            heights[v] = std::max(heights[v], heights[u] + 1);
+        }
+    }
+
+    std::vector<int>& heights;
+    const Graph& graph;
+};
+
+// Function to calculate vertex heights in a tree
+std::vector<int> calculate_vertex_heights(const DiGraph& tree, const Graph::vertex_descriptor root) {
+    int num_vertices = boost::num_vertices(tree);
+    std::vector<int> heights(num_vertices, 0);
+
+    HeightVisitor visitor(heights, tree);
+
+    // Perform a depth-first search starting from the root
+    boost::depth_first_search(tree, boost::visitor(visitor).root_vertex(root));
+
+    return heights;
+}
+
+int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G) {
+    int total = 0;
+    associative_property_map<std::map<Vertex, int>> cpi_count; //stores counts of partial solutions for all vertices in G
+    typedef typename graph_traits<Graph>::vertex_iterator iter_v;
+    std::vector<int> heights = calculate_vertex_heights(tree, root);
+    std::vector<std::list<Vertex>> v_height; // element i contains a list of vertices in T of height i
+    std::vector<std::list<Vertex>> v_colour; // element i contains a list of vertices with colour i
+    for (Graph::vertex_descriptor v = 0; v < boost::num_vertices(tree); ++v) {
+        v_height[heights[v]].push_back(v);
+        v_colour[colour_H[v]].push_back(v);
+    }
+
+    
+    for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
+        cpi_count[*p.first] = 0;
+        for(int i = 0; i < v_height.size(); i++) {
+            std::list<Vertex> all_height_i = v_height[i];
+            for (Vertex v: all_height_i) {
+                std::list<Vertex> candidates = v_colour[colour_H[v]];
+                for (Vertex w: candidates) {
+                    cpi_count[w] = 1;
+                    if (i != 0) {
+                        std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> childrens = boost::adjacent_vertices(v, tree);
+                        for (Graph::adjacency_iterator children = childrens.first; children != childrens.second; ++children) {
+                            Vertex c = *children;
+                            int current_child = 0;
+
+                            std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> neighbours = boost::adjacent_vertices(w, G);
+                            for (Graph::adjacency_iterator neighbour = neighbours.first; neighbour != neighbours.second; ++neighbour) {
+                                Vertex c_cand = *neighbour;
+                                current_child += cpi_count[c_cand];
+                            }
+
+                            cpi_count[w] *= current_child;
+                        }
+
+                        if (i == v_height.size()-1) {
+                            total += cpi_count[w];
+                        }
+                    }
+                }
+            }   
+        }
+    }
+
+    return total;
+}
+
 
 
 /**
@@ -770,6 +847,13 @@ int count = tree_count(H, 0, colour_H, G, colour_G);
 
 std::cout << "NUMBER OF CPIs IS " << count;
 
+count = new_tree_count(H, 0, colour_H, G, colour_G);
+
+std::cout << "NUMBER OF NEW CPIs IS " << count;
+
 }
 
-int main() {}
+
+
+
+int main() { test();}
