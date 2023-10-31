@@ -452,8 +452,7 @@ struct HeightVisitor : public boost::default_dfs_visitor {
     HeightVisitor(std::vector<int>& heights, const DiGraph& g)
         : heights(heights), graph(g) {}
 
-    template <typename Vertex, typename Graph>
-    void discover_vertex(Vertex u, const Graph& g) {
+    void discover_vertex(Vertex u, const DiGraph& g) {
         for (auto it = boost::adjacent_vertices(u, graph); it.first != it.second; ++it.first) {
             Vertex v = *it.first;
             heights[v] = std::max(heights[v], heights[u] + 1);
@@ -461,7 +460,7 @@ struct HeightVisitor : public boost::default_dfs_visitor {
     }
 
     std::vector<int>& heights;
-    const Graph& graph;
+    const DiGraph& graph;
 };
 
 // Function to calculate vertex heights in a tree
@@ -478,15 +477,39 @@ std::vector<int> calculate_vertex_heights(const DiGraph& tree, const Graph::vert
 }
 
 int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G) {
+    std::cout<<"Starting the algorithm inner\n";
     int total = 0;
     associative_property_map<std::map<Vertex, int>> cpi_count; //stores counts of partial solutions for all vertices in G
     typedef typename graph_traits<Graph>::vertex_iterator iter_v;
     std::vector<int> heights = calculate_vertex_heights(tree, root);
+    std::cout << "HEIGHTS: [";
+    for (int h: heights) {
+        std::cout << h << " ";
+    }
+    std::cout << "]\n";
+
+
+
     std::vector<std::list<Vertex>> v_height; // element i contains a list of vertices in T of height i
     std::vector<std::list<Vertex>> v_colour; // element i contains a list of vertices with colour i
-    for (Graph::vertex_descriptor v = 0; v < boost::num_vertices(tree); ++v) {
-        v_height[heights[v]].push_back(v);
+    std::cout<<"Starting vertex traversal\n";
+    for (Vertex v = 0; v < boost::num_vertices(tree); ++v) { //think this traversal might be odd
+        std::cout<<"Vertex has height " << heights[v] << "\n";
+        std::cout<<"And colour " << colour_H[v] << "\n";
+        v_height[heights[v]].push_back(v); // THE ISSUE LIES HERE
+        std::cout<<"First push was successful\n";
         v_colour[colour_H[v]].push_back(v);
+    }
+
+    std::cout<<"v_height map\n";
+
+    for (std::list<Vertex> height: v_height) {
+
+        std::cout<<"[";
+        for (Vertex v: height) {
+            std::cout << v << " ";
+        }
+        std::cout<<"]\n";
     }
 
     
@@ -499,9 +522,11 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
                 for (Vertex w: candidates) {
                     cpi_count[w] = 1;
                     if (i != 0) {
-                        std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> childrens = boost::adjacent_vertices(v, tree);
-                        for (Graph::adjacency_iterator children = childrens.first; children != childrens.second; ++children) {
-                            Vertex c = *children;
+
+                        std::pair<DiGraph::out_edge_iterator, DiGraph::out_edge_iterator> outEdges = boost::out_edges(v, tree);
+
+                        for (DiGraph::out_edge_iterator outEdge = outEdges.first; outEdge != outEdges.second; ++outEdge) {
+                            Vertex c = boost::target(*outEdge, tree);
                             int current_child = 0;
 
                             std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> neighbours = boost::adjacent_vertices(w, G);
@@ -771,9 +796,12 @@ void test() {
 
 std::cout << "start method\n";
 
-Graph uStar = star<Graph>(4);
+std::cout <<"with new algorithm\n";
 
+Graph uStar = star<Graph>(4);
 DiGraph H = makeRooted(uStar, 1);
+
+//DiGraph H = path<DiGraph>(4);
 
 //Graph G = uPath<Graph>(10);
 Graph G = erdos_renyi(50, 0.25);
@@ -843,13 +871,17 @@ save_graph("G_coloured.dot", G, colour_G);
 
 // int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G, false);
 
-int count = tree_count(H, 0, colour_H, G, colour_G);
+int count = tree_count(H, 1, colour_H, G, colour_G);
 
-std::cout << "NUMBER OF CPIs IS " << count;
+std::cout << "NUMBER OF CPIs IS " << count << "\n";
 
-count = new_tree_count(H, 0, colour_H, G, colour_G);
+std::cout << "start to run new alg\n";
 
-std::cout << "NUMBER OF NEW CPIs IS " << count;
+count = new_tree_count(H, 1, colour_H, G, colour_G);
+
+std::cout << "new alg terminating\n";
+
+std::cout << "NUMBER OF NEW CPIs IS " << count << "\n";
 
 }
 
