@@ -448,31 +448,25 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
     return total;
 }
 
-struct HeightVisitor : public boost::default_dfs_visitor {
-    HeightVisitor(std::vector<int>& heights, const DiGraph& g)
-        : heights(heights), graph(g) {}
-
-    void discover_vertex(Vertex u, const DiGraph& g) {
-        for (auto it = boost::adjacent_vertices(u, graph); it.first != it.second; ++it.first) {
-            Vertex v = *it.first;
-            heights[v] = std::max(heights[v], heights[u] + 1);
-        }
-    }
-
-    std::vector<int>& heights;
-    const DiGraph& graph;
-};
-
 // Function to calculate vertex heights in a tree
-std::vector<int> calculate_vertex_heights(const DiGraph& tree, const Graph::vertex_descriptor root) {
-    int num_vertices = boost::num_vertices(tree);
-    std::vector<int> heights(num_vertices, 0);
+void calculateHeights(const DiGraph& tree, Vertex v, std::vector<int>& heights) {
+    std::cout << "CALLED FOR VERTEX " << v << "\n";
+    int height = 0; // Initialize the height for the current vertex
+    
+    // Loop through all adjacent vertices
+    for (auto it = boost::adjacent_vertices(v, tree); it.first != it.second; ++it.first) {
+        int adjacent_vertex = *it.first;
+        calculateHeights(tree, adjacent_vertex, heights);
+        height = std::max(height, heights[adjacent_vertex] + 1); // Update flavor
+    }
+    
+    std::cout << "VERTEX " << v << " HAS HEIGHT " << height << "\n";
+    heights[v] = height; // Set the flavor of the current vertex
+}
 
-    HeightVisitor visitor(heights, tree);
-
-    // Perform a depth-first search starting from the root
-    boost::depth_first_search(tree, boost::visitor(visitor).root_vertex(root));
-
+std::vector<int> getAllHeights(const DiGraph& tree, Vertex root) {
+    std::vector<int> heights(boost::num_vertices(tree), 0);
+    calculateHeights(tree, root, heights);
     return heights;
 }
 
@@ -481,7 +475,7 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
     int total = 0;
     associative_property_map<std::map<Vertex, int>> cpi_count; //stores counts of partial solutions for all vertices in G
     typedef typename graph_traits<Graph>::vertex_iterator iter_v;
-    std::vector<int> heights = calculate_vertex_heights(tree, root);
+    std::vector<int> heights = getAllHeights(tree, root);
     std::cout << "HEIGHTS: [";
     for (int h: heights) {
         std::cout << h << " ";
