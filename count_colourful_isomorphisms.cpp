@@ -485,15 +485,52 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
 
 
     std::vector<std::list<Vertex>> v_height; // element i contains a list of vertices in T of height i
+    int max_height = *max_element(std::begin(heights), std::end(heights));
+    
+    for (int i = 0; i <= max_height; i++) {
+        v_height.push_back({});
+    }
+
     std::vector<std::list<Vertex>> v_colour; // element i contains a list of vertices with colour i
+    int max_colour = boost::num_vertices(tree)-1;
+
+    for (int i = 0; i <= max_colour; i++) {
+        v_colour.push_back({});
+    }
+
+    std::cout << v_height.size();
+    std::cout << v_colour.size();
+
+    std::cout<<"v_colour map\n";
+
+    for (std::list<Vertex> colour: v_colour) {
+
+
+
+        std::cout<<"[";
+        for (Vertex v: colour) {
+            std::cout << v << " ";
+        }
+        std::cout<<"]\n";
+    }
+
+
     std::cout<<"Starting vertex traversal\n";
-    for (Vertex v = 0; v < boost::num_vertices(tree); ++v) { //think this traversal might be odd
+    Graph::vertex_iterator vi, vi_end;
+    for (boost::tie(vi, vi_end) = boost::vertices(tree); vi != vi_end; ++vi) { //think this traversal might be odd
+        Vertex v = *vi;
         std::cout<<"Vertex has height " << heights[v] << "\n";
         std::cout<<"And colour " << colour_H[v] << "\n";
-        v_height[heights[v]].push_back(v); // THE ISSUE LIES HERE
-        std::cout<<"First push was successful\n";
-        v_colour[colour_H[v]].push_back(v);
+        v_height[heights[v]].push_back(v);
     }
+
+    for (boost::tie(vi, vi_end) = boost::vertices(G); vi != vi_end; ++vi) { //think this traversal might be odd
+        Vertex v = *vi;
+        std::cout << "Vertex " << v << " has colour " << colour_G[v] << "\n";
+        v_colour[colour_G[v]].push_back(v);
+    }
+
+
 
     std::cout<<"v_height map\n";
 
@@ -501,6 +538,21 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
 
         std::cout<<"[";
         for (Vertex v: height) {
+            std::cout << v << " ";
+        }
+        std::cout<<"]\n";
+    }
+
+    std::cout<<"v_colour map\n";
+
+    for (std::list<Vertex> colour: v_colour) {
+
+        std::cout<<"COLOUR SIZE:\n";
+
+        std::cout << colour.size() << "\n";
+
+        std::cout<<"[";
+        for (Vertex v: colour) {
             std::cout << v << " ";
         }
         std::cout<<"]\n";
@@ -825,7 +877,8 @@ gen.seed(std::time(0));
 boost::random::uniform_int_distribution<> dis(0, boost::num_vertices(H)-1);
 
 for(int i=0; i < boost::num_vertices(G); i++) {
-    col_G[i] = dis(gen);
+   //col_G[i] = dis(gen);
+   col_G[i] = i % boost::num_vertices(H);
 }
 
 // for(int i=0; i < boost::num_vertices(G); i++) {
