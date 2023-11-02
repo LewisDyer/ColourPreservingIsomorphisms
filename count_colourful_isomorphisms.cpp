@@ -450,7 +450,7 @@ int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap
 
 // Function to calculate vertex heights in a tree
 void calculateHeights(const DiGraph& tree, Vertex v, std::vector<int>& heights) {
-    std::cout << "CALLED FOR VERTEX " << v << "\n";
+    //std::cout << "CALLED FOR VERTEX " << v << "\n";
     int height = 0; // Initialize the height for the current vertex
     
     // Loop through all adjacent vertices
@@ -460,7 +460,7 @@ void calculateHeights(const DiGraph& tree, Vertex v, std::vector<int>& heights) 
         height = std::max(height, heights[adjacent_vertex] + 1); // Update flavor
     }
     
-    std::cout << "VERTEX " << v << " HAS HEIGHT " << height << "\n";
+    //std::cout << "VERTEX " << v << " HAS HEIGHT " << height << "\n";
     heights[v] = height; // Set the flavor of the current vertex
 }
 
@@ -471,16 +471,16 @@ std::vector<int> getAllHeights(const DiGraph& tree, Vertex root) {
 }
 
 int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G) {
-    std::cout<<"Starting the algorithm inner\n";
+    // std::cout<<"Starting the algorithm inner\n";
     int total = 0;
-    associative_property_map<std::map<Vertex, int>> cpi_count; //stores counts of partial solutions for all vertices in G
+    Colours cpi_count; //stores counts of partial solutions for all vertices in G
     typedef typename graph_traits<Graph>::vertex_iterator iter_v;
     std::vector<int> heights = getAllHeights(tree, root);
-    std::cout << "HEIGHTS: [";
-    for (int h: heights) {
-        std::cout << h << " ";
-    }
-    std::cout << "]\n";
+    // std::cout << "HEIGHTS: [";
+    // for (int h: heights) {
+    //     std::cout << h << " ";
+    // }
+    // std::cout << "]\n";
 
 
 
@@ -498,74 +498,81 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
         v_colour.push_back({});
     }
 
-    std::cout << v_height.size();
-    std::cout << v_colour.size();
+    // std::cout << v_height.size();
+    // std::cout << v_colour.size();
 
-    std::cout<<"v_colour map\n";
+    // std::cout<<"v_colour map\n";
 
-    for (std::list<Vertex> colour: v_colour) {
-
-
-
-        std::cout<<"[";
-        for (Vertex v: colour) {
-            std::cout << v << " ";
-        }
-        std::cout<<"]\n";
-    }
+    // for (std::list<Vertex> colour: v_colour) {
 
 
-    std::cout<<"Starting vertex traversal\n";
+
+    //     std::cout<<"[";
+    //     for (Vertex v: colour) {
+    //         std::cout << v << " ";
+    //     }
+    //     std::cout<<"]\n";
+    // }
+
+
+    //std::cout<<"Starting vertex traversal\n";
     Graph::vertex_iterator vi, vi_end;
     for (boost::tie(vi, vi_end) = boost::vertices(tree); vi != vi_end; ++vi) { //think this traversal might be odd
         Vertex v = *vi;
-        std::cout<<"Vertex has height " << heights[v] << "\n";
-        std::cout<<"And colour " << colour_H[v] << "\n";
+        //std::cout<<"Vertex has height " << heights[v] << "\n";
+        //std::cout<<"And colour " << colour_H[v] << "\n";
         v_height[heights[v]].push_back(v);
     }
 
     for (boost::tie(vi, vi_end) = boost::vertices(G); vi != vi_end; ++vi) { //think this traversal might be odd
         Vertex v = *vi;
-        std::cout << "Vertex " << v << " has colour " << colour_G[v] << "\n";
+        //std::cout << "Vertex " << v << " has colour " << colour_G[v] << "\n";
         v_colour[colour_G[v]].push_back(v);
     }
 
 
 
-    std::cout<<"v_height map\n";
+    // std::cout<<"v_height map\n";
 
-    for (std::list<Vertex> height: v_height) {
+    // for (std::list<Vertex> height: v_height) {
 
-        std::cout<<"[";
-        for (Vertex v: height) {
-            std::cout << v << " ";
-        }
-        std::cout<<"]\n";
-    }
+    //     std::cout<<"[";
+    //     for (Vertex v: height) {
+    //         std::cout << v << " ";
+    //     }
+    //     std::cout<<"]\n";
+    // }
 
-    std::cout<<"v_colour map\n";
+    // std::cout<<"v_colour map\n";
 
-    for (std::list<Vertex> colour: v_colour) {
+    // for (std::list<Vertex> colour: v_colour) {
 
-        std::cout<<"COLOUR SIZE:\n";
+    //     std::cout<<"COLOUR SIZE:\n";
 
-        std::cout << colour.size() << "\n";
+    //     std::cout << colour.size() << "\n";
 
-        std::cout<<"[";
-        for (Vertex v: colour) {
-            std::cout << v << " ";
-        }
-        std::cout<<"]\n";
-    }
+    //     std::cout<<"[";
+    //     for (Vertex v: colour) {
+    //         std::cout << v << " ";
+    //     }
+    //     std::cout<<"]\n";
+    // }
+
+    // std::cout << boost::num_vertices(G);
 
     
-    for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
-        cpi_count[*p.first] = 0;
+    for (boost::tie(vi, vi_end) = boost::vertices(G); vi != vi_end; ++vi) {
+        Vertex v = *vi;
+        //std::cout << "INITIALISING FOR " << v << "\n";
+        cpi_count[v] = 0;
+        
+    }
         for(int i = 0; i < v_height.size(); i++) {
             std::list<Vertex> all_height_i = v_height[i];
             for (Vertex v: all_height_i) {
                 std::list<Vertex> candidates = v_colour[colour_H[v]];
                 for (Vertex w: candidates) {
+                    //std::cout << "CHECKING CANDIDATE " << w << "\n";
                     cpi_count[w] = 1;
                     if (i != 0) {
 
@@ -574,12 +581,19 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
                         for (DiGraph::out_edge_iterator outEdge = outEdges.first; outEdge != outEdges.second; ++outEdge) {
                             Vertex c = boost::target(*outEdge, tree);
                             int current_child = 0;
+                            //std::cout << "RESET CURRENT CHILD\n";
 
                             std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> neighbours = boost::adjacent_vertices(w, G);
                             for (Graph::adjacency_iterator neighbour = neighbours.first; neighbour != neighbours.second; ++neighbour) {
                                 Vertex c_cand = *neighbour;
-                                current_child += cpi_count[c_cand];
+                                if (colour_G[c_cand] == colour_H[c]) {
+                                    //std::cout << "C' IS VERTEX " << c_cand << "\n";
+                                    //std::cout << "INCREMENT CURRENT CHILD BY " << cpi_count[c_cand] << "\n";
+                                    current_child += cpi_count[c_cand];
+                                }                        
                             }
+
+                            //std::cout << "MULTIPLY BY " << current_child << "\n";
 
                             cpi_count[w] *= current_child;
                         }
@@ -588,10 +602,11 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, Colou
                             total += cpi_count[w];
                         }
                     }
+
+                    //std::cout << "CANDIDATE " << w << " HAS CPI COUNT " << cpi_count[w] << "\n";
                 }
             }   
         }
-    }
 
     return total;
 }
@@ -850,7 +865,7 @@ DiGraph H = makeRooted(uStar, 1);
 //DiGraph H = path<DiGraph>(4);
 
 //Graph G = uPath<Graph>(10);
-Graph G = erdos_renyi(50, 0.25);
+Graph G = erdos_renyi(1000, 0.10);
 
 //std::cout << "made random graph\n";
 //Graph G = path<Graph>(10);
@@ -918,13 +933,13 @@ save_graph("G_coloured.dot", G, colour_G);
 
 // int count = count_colour_preserving_isomorphisms(H, G, colour_H, colour_G, false);
 
-int count = tree_count(H, 1, colour_H, G, colour_G);
+// int count = tree_count(H, 1, colour_H, G, colour_G);
 
-std::cout << "NUMBER OF CPIs IS " << count << "\n";
+// std::cout << "NUMBER OF CPIs IS " << count << "\n";
 
 std::cout << "start to run new alg\n";
 
-count = new_tree_count(H, 1, colour_H, G, colour_G);
+int count = new_tree_count(H, 1, colour_H, G, colour_G);
 
 std::cout << "new alg terminating\n";
 
