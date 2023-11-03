@@ -46,6 +46,7 @@
 # include <boost/random/mersenne_twister.hpp>
 # include <boost/graph/breadth_first_search.hpp>
 # include <iostream>
+# include "graph_generators.h"
 
 using namespace boost;
 using DiGraph = adjacency_list<listS, vecS, bidirectionalS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
@@ -66,28 +67,28 @@ using ColourMap = associative_property_map<Colours>;
  * @param n, the number of vertices in the graph.
  * @return A path on n vertices.
 */
-template <class G>
-G path(int n) {
+// template <class G>
+// G path(int n) {
 
-    G path = DiGraph(n);
+//     G path = DiGraph(n);
 
-    for(int i=0; i < n-1; i++) {
-        add_edge(i, i+1, path);
-    }
+//     for(int i=0; i < n-1; i++) {
+//         add_edge(i, i+1, path);
+//     }
 
-	return path;
-}
+// 	return path;
+// }
 
-template <class G>
-G star (int n) {
-    G star = Graph(n);
+// template <class G>
+// G star (int n) {
+//     G star = Graph(n);
 
-    for (int i=1; i < n; i++) {
-        add_edge(0, i, star);
-    }
+//     for (int i=1; i < n; i++) {
+//         add_edge(0, i, star);
+//     }
 
-    return star;
-}
+//     return star;
+// }
 
 /**
  * @param n, the number of vertices in the graph.
@@ -126,24 +127,24 @@ G star (int n) {
 //     }
 // }
 
-Graph erdos_renyi(int n, double p) {
-    Graph g(n);
+// Graph erdos_renyi(int n, double p) {
+//     Graph g(n);
 
-    boost::random::mt19937 gen;
-    gen.seed(std::time(0));
+//     boost::random::mt19937 gen;
+//     gen.seed(std::time(0));
 
-    boost::random::uniform_int_distribution<> dis(0, n-1);
-    boost::random::uniform_real_distribution<double> real_dis(0.0, 1.0);
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < std::min(i+1+(int)(n*p), n); ++j) {
-            if (real_dis(gen) < p) {
-                boost::add_edge(i, j, g);
-            }
-        }
-    }
+//     boost::random::uniform_int_distribution<> dis(0, n-1);
+//     boost::random::uniform_real_distribution<double> real_dis(0.0, 1.0);
+//     for (int i = 0; i < n; ++i) {
+//         for (int j = i + 1; j < std::min(i+1+(int)(n*p), n); ++j) {
+//             if (real_dis(gen) < p) {
+//                 boost::add_edge(i, j, g);
+//             }
+//         }
+//     }
 
-    return g;
-}
+//     return g;
+// }
 
 DiGraph makeRooted(const Graph& G, Vertex root) {
     DiGraph d;
