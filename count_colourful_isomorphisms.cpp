@@ -860,7 +860,7 @@ std::cout << "start method\n";
 
 std::cout <<"with new algorithm\n";
 
-Graph uStar = star<Graph>(4);
+Graph uStar = star(4);
 DiGraph H = makeRooted(uStar, 1);
 
 //DiGraph H = path<DiGraph>(4);
@@ -951,4 +951,4 @@ std::cout << "NUMBER OF NEW CPIs IS " << count << "\n";
 
 
 
-int main() { test();}
+// int main() { test();}

@@ -2,9 +2,6 @@
 // using Vertex = graph_traits<Graph>::vertex_descriptor;
 // using Edge = graph_traits<Graph>::edge_descriptor;
 
-template <class G>
-G path(int n);
-
 template <class G, class PM>
 void save_graph(std::string filename, G & g, PM & pm);
 

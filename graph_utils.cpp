@@ -1,27 +1,8 @@
-# include "tree_decomposition.hpp"
-# include "nice_tree_decomposition.hpp"
 # include <boost/graph/adjacency_list.hpp>
 # include <boost/graph/graphviz.hpp>
-# include <random>
-
 
 using namespace boost;
 
-/**
- * @param n, the number of vertices in the graph.
- * @return A path on n vertices.
-*/
-template <class G>
-G path(int n) {
-
-    G path = Graph(n);
-
-    for(int i=0; i < n-1; i++) {
-        add_edge(i, i+1, path);
-    }
-
-	return path;
-}
 
 template <class G, class PM>
 // Helper function to save graph to file from https://github.com/Cynt3r/boost-treewidth

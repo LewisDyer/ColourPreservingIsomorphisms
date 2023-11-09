@@ -11,10 +11,9 @@ using DiGraph = adjacency_list<listS, vecS, bidirectionalS, property<vertex_name
  * @param n, the number of vertices in the graph.
  * @return A path on n vertices.
 */
-template <class G>
-G path(int n) {
+Graph path(int n) {
 
-    G path = Graph(n);
+    Graph path(n);
 
     for(int i=0; i < n-1; i++) {
         add_edge(i, i+1, path);
@@ -28,9 +27,9 @@ G path(int n) {
  * @param n, the number of vertices in the graph.
  * @return A clique on n vertices. 
 */
-template <class G>
-G clique(int n) {
-    G clique = Graph(n);
+
+Graph clique(int n) {
+    Graph clique(n);;
     for(int i=0; i < n; i++) {
         for (int j=0; j < i; j++) {
             add_edge(i, j, clique);
@@ -40,9 +39,8 @@ G clique(int n) {
     return clique;
 }
 
-template <class G>
-G star(int n) {
-    G star = Graph(n);
+Graph star(int n) {
+    Graph star(n);
 
     for (int i=1; i < n; i++) {
         add_edge(0, i, star);

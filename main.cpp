@@ -2,6 +2,8 @@
 # include <iostream>
 # include "count_colourful_isomorphisms.cpp"
 
+# include "graph_utils.h"
+# include "graph_generators.h"
 
 int main() {
 
@@ -21,7 +23,7 @@ std::cout << "start method\n";
 
 std::cout <<"with new algorithm\n";
 
-Graph uStar = star<Graph>(4);
+Graph uStar = star(4);
 DiGraph H = makeRooted(uStar, 1);
 
 //DiGraph H = path<DiGraph>(4);

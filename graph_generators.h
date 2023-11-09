@@ -24,14 +24,11 @@ using namespace boost;
 
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 
-template <class G>
-G path(int n);
+Graph path(int n);
 
-template <class G>
-G star(int n);
+Graph star(int n);
 
-template <class G>
-G clique(int n);
+Graph clique(int n);
 
 Graph erdos_renyi(int n, double p);
 
