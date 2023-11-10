@@ -1,3 +1,5 @@
+// Credit to Václav Král at https://github.com/Cynt3r/boost-treewidth
+
 #ifndef BOOST_GRAPH_NICE_TREE_DECOMPOSITION_HPP
 #define BOOST_GRAPH_NICE_TREE_DECOMPOSITION_HPP
 

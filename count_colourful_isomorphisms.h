@@ -22,12 +22,6 @@ using ColourMap = associative_property_map<Colours>;
 
 DiGraph makeRooted(const Graph& G, Vertex root);
 
-//template <class G, class PM>
-//void save_graph(std::string filename, G & g, PM & pm);
-
-//template <class G>
-//void save_graph(std::string filename, G & g);
-
 int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G);
 
 int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G);
