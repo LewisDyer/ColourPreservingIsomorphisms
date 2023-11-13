@@ -1,8 +1,5 @@
 # include <boost/graph/adjacency_list.hpp>
-
 # include "graph_generators.h"
-
-
 
 using namespace boost;
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
@@ -39,6 +36,10 @@ Graph clique(int n) {
     return clique;
 }
 
+/**
+ * @param n, the number of vertices in the graph.
+ * @return A star on n vertices, with vertex 0 as the central vertex and vertices 1 to n-1 inclusive as the leaf vertices.
+*/
 Graph star(int n) {
     Graph star(n);
 
@@ -49,6 +50,13 @@ Graph star(int n) {
     return star;
 }
 
+
+/**
+ * @param n, the number of vertices in the graph
+ * @param p, the probability of each edge existing in the graph (must be between 0 and 1 inclusive)
+ * 
+ * @return an Erdos-Renyi graph on n vertices with each edge existing with probability p.
+*/
 Graph erdos_renyi(int n, double p) {
     Graph g(n);
 
@@ -59,6 +67,7 @@ Graph erdos_renyi(int n, double p) {
     boost::random::uniform_real_distribution<double> real_dis(0.0, 1.0);
     for (int i = 0; i < n; ++i) {
         for (int j = i + 1; j < std::min(i+1+(int)(n*p), n); ++j) {
+            // (i,j) is the proposed edge to add
             if (real_dis(gen) < p) {
                 boost::add_edge(i, j, g);
             }

@@ -21,3 +21,4 @@ Configure the CMake project: `cmake ..`
 
 Build the application: `cmake --build . --config Release`
 
+Two executables will be built: Run `.\bin\driver.exe` if you just want to run the driver program, or run `.\bin\tests.exe` to run the unit tests.

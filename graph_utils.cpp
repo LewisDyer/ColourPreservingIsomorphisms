@@ -14,7 +14,7 @@ void save_graph(std::string filename, G & g, PM & pm) {
 }
 
 template <class G>
-// Same helper function but with default labels
+// Same helper function, but with default labels
 void save_graph(std::string filename, G & g) {
 	std::ofstream file;
   	file.open(filename);
