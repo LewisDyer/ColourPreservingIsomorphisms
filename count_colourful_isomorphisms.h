@@ -20,11 +20,9 @@ using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, i
 using Colours= std::map<Vertex, int>;
 using ColourMap = associative_property_map<Colours>;
 
-DiGraph makeRooted(const Graph& G, Vertex root);
+// int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G);
 
-int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G);
-
-int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G);
+// int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G);
 
 void calculateHeights(const DiGraph& tree, Vertex v, std::vector<int>& heights);
 
