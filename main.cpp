@@ -6,7 +6,6 @@
 
 int main() {
 
-
 // uStar is rooted at vertex 1
 // note root selection doesn't change the overall pattern, just how pattern matching is processed.
 Graph uStar = star(4);
