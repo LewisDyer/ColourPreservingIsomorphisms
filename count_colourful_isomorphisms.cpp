@@ -19,8 +19,6 @@
 # include "graph_utils.h"
 # include "graph_generators.h"
 
-
-
 using namespace boost;
 using DiGraph = adjacency_list<listS, vecS, bidirectionalS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Vertex =  graph_traits<DiGraph>::vertex_descriptor;
@@ -28,81 +26,6 @@ using Edge = graph_traits<DiGraph>::edge_descriptor;
 using Graph = adjacency_list<listS, vecS, undirectedS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
 using Colours= std::map<Vertex, int>;
 using ColourMap = associative_property_map<Colours>;
-
-// int count_tree(Vertex root, Vertex rootMapped, DiGraph tree, ColourMap colour_H, Graph G, ColourMap colour_G) {
-
-//     if (boost::out_degree(root, tree) == 0 ) { //leaf node
-//         return 1;
-//     }
-    
-//     int combos = 1;
-//     // iterate through children of r
-
-//     typename graph_traits<DiGraph>::out_edge_iterator child, child_end;
-//     typename graph_traits<DiGraph>::out_edge_iterator target, target_end;
-
-//     for(boost::tie(child, child_end) = boost::out_edges(root, tree); child != child_end; ++child) {
-//         Vertex childVertex = boost::target(*child, tree);
-//         int childDegree = boost::degree(childVertex, tree);
-//         int childColour = colour_H[childVertex];
-//         int currentTotal = 0;
-//         //iterate through adjacent vertices of rootMapped, look for vertices with childColour
-        
-//         std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> neighbors = boost::adjacent_vertices(rootMapped, G);
-
-//         // Iterate through adjacent vertices
-//         for (Graph::adjacency_iterator neighbor = neighbors.first; neighbor != neighbors.second; ++neighbor) {
-//             Graph::vertex_descriptor adjacent_vertex = *neighbor;
-//             int targetColour = colour_G[adjacent_vertex];
-//             if (targetColour == childColour) {
-//                 int targetDegree = boost::degree(adjacent_vertex, G);
-//                 if (targetDegree >= childDegree) { // degree filtering to avoid checking impossible matches
-//                 currentTotal += count_tree(childVertex, adjacent_vertex, tree, colour_H, G, colour_G);
-//                 } else {
-//                     std::cout << "avoided due to degree filtering \n";
-//                 }
-//             }
-//         }
-
-//         if (currentTotal == 0) {return 0;}
-
-//         combos *= currentTotal;
-
-//     }
-    
-//     return combos;
-
-// }
-
-// /**
-//  * @param tree the pattern graph being considered (must be a tree on k vertices)
-//  * @param root The root of the tree
-//  * @param colour_H the colourful vertex k-colouring of the vertices of the tree
-//  * @param G the data graph
-//  * @param colour_G an arbitrary k-colouring of vertices of G
-//  * @return The number of colour-preserving isomorphisms between H and subgraphs of G.
-// */
-// int tree_count(DiGraph tree, Vertex root, ColourMap colour_H, Graph G, ColourMap colour_G) {
-
-//     //Vertex root = get_root(tree);
-//     int targetColour = colour_H[root];
-//     int rootDegree = boost::degree(root, tree);
-
-//     // search for targetColour in G to consider starting points
-
-//      int total = 0;
-//             typedef typename graph_traits<Graph>::vertex_iterator iter_v;
-//             for (std::pair<iter_v, iter_v> p = vertices(G); p.first != p.second; ++p.first) {
-//                 if (colour_G[*p.first] == targetColour && *p.first != boost::num_vertices(G)) {
-//                     if (boost::degree(*p.first, G) >= rootDegree) {
-//                     total += count_tree(root, *p.first, tree, colour_H, G, colour_G);
-//                 }
-//                 }
-//             }
-
-
-//     return total;
-// }
 
 /**
  * @param tree, a directed graph of the tree pattern being considered such that there exists a path from the root to every other vertex.
