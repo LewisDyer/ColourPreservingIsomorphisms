@@ -34,7 +34,6 @@ using ColourMap = associative_property_map<Colours>;
 */
 void calculateHeights(const DiGraph& tree, Vertex v, std::vector<int>& heights) {
     int height = 0; // Initialize the height for the current vertex, initially 0 for leaf vertices
-    std::cout << "calculating height for vertex " << v << "\n"; 
 
     if (boost::num_vertices(tree) == 1) {
         heights[0] = 0;
@@ -71,15 +70,12 @@ std::vector<int> getAllHeights(const DiGraph& tree, Vertex root) {
  * @return The number of colour-preserving graph isomorphisms from tree to subgraphs of G.
 */
 int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, ColourMap colour_G) {
-    std::cout<<"Started call\n";
     int total = 0;
     Colours cpi_count; //stores counts of partial solutions for all vertices in G
 
     typedef typename graph_traits<Graph>::vertex_iterator iter_v;
-    std::cout<< "starting to get heights\n";
     std::vector<int> heights = getAllHeights(tree, root);
 
-    std::cout << "got all heights\n";
 
     std::vector<std::list<Vertex>> v_height; //element i should contain a list of all vertices in tree of height i
     int max_height = *max_element(std::begin(heights), std::end(heights));   
@@ -105,7 +101,6 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, Co
         v_colour[colour_G[v]].push_back(v); //update colour lookup for each vertex in G
     }
 
-    std::cout << "about to init counts\n";
   
     // initialise count lookup to 0 for all vertices in G
     for (boost::tie(vi, vi_end) = boost::vertices(G); vi != vi_end; ++vi) {
@@ -115,8 +110,6 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, Co
 
     //iterate through each possible height for vertices in the tree
     for(int i = 0; i < v_height.size(); i++) {
-
-        std::cout << "iteration " << i << "\n";
         
         std::list<Vertex> all_height_i = v_height[i];
         // iterate through all vertices of height i

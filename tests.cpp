@@ -95,8 +95,87 @@ BOOST_AUTO_TEST_CASE(path_2_found_in_path_1000_999_times) {
     ColourMap colour_G(col_G);
 
     int k = new_tree_count(T, 0, colour_T, G, colour_G);
-
-    std::cout << k << "\n";
-
+    
     BOOST_CHECK_EQUAL(k, 999);
+}
+
+BOOST_AUTO_TEST_CASE(path_5_found_in_clique_5_once) {
+    Graph P = path(5);
+    DiGraph T = makeRooted(P, 0);
+
+    Colours col_T;
+
+    for(int i=0; i < boost::num_vertices(T); i++) {
+        col_T[i] = i;
+    }
+
+    ColourMap colour_T(col_T);
+
+    Graph G = clique(5);
+
+    Colours col_G;
+
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        col_G[i] = i % boost::num_vertices(T);
+    }
+
+    ColourMap colour_G(col_G);
+
+    int k = new_tree_count(T, 0, colour_T, G, colour_G);
+    
+    BOOST_CHECK_EQUAL(k, 1);
+}
+
+BOOST_AUTO_TEST_CASE(path_5_found_in_clique_100_3200000_times) {
+    Graph P = path(5);
+    DiGraph T = makeRooted(P, 0);
+
+    Colours col_T;
+
+    for(int i=0; i < boost::num_vertices(T); i++) {
+        col_T[i] = i;
+    }
+
+    ColourMap colour_T(col_T);
+
+    Graph G = clique(100);
+
+    Colours col_G;
+
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        col_G[i] = i % boost::num_vertices(T);
+    }
+
+    ColourMap colour_G(col_G);
+
+    int k = new_tree_count(T, 0, colour_T, G, colour_G);
+    
+    BOOST_CHECK_EQUAL(k, 3200000);
+}
+
+BOOST_AUTO_TEST_CASE(path_5_found_in_path_20_4_times) {
+    Graph P = path(5);
+    DiGraph T = makeRooted(P, 0);
+
+    Colours col_T;
+
+    for(int i=0; i < boost::num_vertices(T); i++) {
+        col_T[i] = i;
+    }
+
+    ColourMap colour_T(col_T);
+
+    Graph G = path(20);
+
+    Colours col_G;
+
+    for(int i=0; i < boost::num_vertices(G); i++) {
+        col_G[i] = i % boost::num_vertices(T);
+    }
+
+    ColourMap colour_G(col_G);
+
+    int k = new_tree_count(T, 0, colour_T, G, colour_G);
+    
+    BOOST_CHECK_EQUAL(k, 4);
 }
