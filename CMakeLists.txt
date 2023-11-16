@@ -14,3 +14,6 @@ target_link_libraries(driver ${CONAN_LIBS})
 add_executable(tests count_colourful_isomorphisms.cpp graph_generators.cpp graph_utils.cpp tests.cpp)
 target_link_libraries(tests ${CONAN_LIBS})
 add_test(NAME CPITests COMMAND tests)
+
+add_executable(timing count_colourful_isomorphisms.cpp graph_generators.cpp graph_utils.cpp performance_analysis.cpp timing.cpp)
+target_link_libraries(timing ${CONAN_LIBS})
