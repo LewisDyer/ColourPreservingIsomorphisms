@@ -3,7 +3,7 @@
 # include "graph_utils.h"
 # include "graph_generators.h"
 # include "count_colourful_isomorphisms.h"
-# include "performance_analysis.cpp"
+# include "performance_analysis.h"
 
 using namespace boost;
 using DiGraph = adjacency_list<listS, vecS, bidirectionalS, property<vertex_name_t, int, property<vertex_index_t, size_t>>, property<edge_index_t, int>>;
@@ -18,7 +18,7 @@ int main() {
     Graph uStar = star(4);
     DiGraph H = makeRooted(uStar, 1);
 
-    Graph G = erdos_renyi(10000, 0.10);
+    Graph G = erdos_renyi(5000, 0.10);
 
     Colours col_H;
 
@@ -38,21 +38,18 @@ int main() {
 
     ColourMap colour_G(col_G);
 
-    int k = 100; //no. of executions
+    time_tree_count(H, 1, col_H, G, col_G, "testTiming.txt", "A star graph on 4 vertices", "An Erdos-Renyi graph with 5000 vertices and edge probability 0.1", 100);
 
-    for (int i=0; i < k; i++) {
-        auto start = std::chrono::high_resolution_clock::now();
-        int j = new_tree_count(H, 1, colour_H, G, colour_G);
-        auto end = std::chrono::high_resolution_clock::now();
+    // int k = 100; //no. of executions
 
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-        std::cout << duration.count() << "ms \n";
-    }
+    // for (int i=0; i < k; i++) {
+    //     auto start = std::chrono::high_resolution_clock::now();
+    //     int j = new_tree_count(H, 1, colour_H, G, colour_G);
+    //     auto end = std::chrono::high_resolution_clock::now();
 
-
-
-
-
+    //     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+    //     std::cout << duration.count() << "ms \n";
+    // }
 
     return 0;
 }
