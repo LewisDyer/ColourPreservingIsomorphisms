@@ -30,6 +30,7 @@ using ColourMap = associative_property_map<Colours>;
 */
 void time_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, ColourMap colour_G, std::string outputFile, std::string describe_tree, std::string describe_G, int noRuns) {
     std::ofstream file;
+    int total_runtime = 0;
     file.open(outputFile);
     file << describe_tree << "\n";
     file << describe_G << "\n";
@@ -39,9 +40,16 @@ void time_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, 
         int j = new_tree_count(tree, root, colour_tree, G, colour_G);
         auto end = std::chrono::high_resolution_clock::now(); 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+
+
         std::cout << duration.count() << "ms \n";
         file << duration.count() << "ms \n";
+        total_runtime += duration.count();
     }
+
+    long meanTime = total_runtime / noRuns;
+
+    file << "Mean runtime: " << meanTime << "ms \n";
 
     file.close();
 }
