@@ -16,10 +16,11 @@ using ColourMap = associative_property_map<Colours>;
 
 int main() {
 
-    Graph uStar = star(4);
-    DiGraph H = makeRooted(uStar, 1);
+    Graph GH = path(2);
+    int root = 0;
+    DiGraph H = makeRooted(GH, root);
 
-    Graph G = erdos_renyi(5000, 0.10);
+    Graph G = star(50000);
 
     Colours col_H;
 
@@ -32,10 +33,18 @@ int main() {
 
     Colours col_G;
 
-    // uniform colouring for G
     for(int i=0; i < boost::num_vertices(G); i++) {
-    col_G[i] = i % boost::num_vertices(H);
+        if (i == 0) {
+            col_G[i] = 0;
+        } else {
+            col_G[i] = 1; // central vertex has colour 0, all others have colour 1.
+        }
     }
+
+    // // uniform colouring for G
+    // for(int i=0; i < boost::num_vertices(G); i++) {
+    // col_G[i] = i % boost::num_vertices(H);
+    // }
 
     ColourMap colour_G(col_G);
 
@@ -56,7 +65,7 @@ int main() {
     std::string filename = "outputs/" + timeString;
 
 
-    time_tree_count(H, 1, col_H, G, col_G, filename, "A star graph on 4 vertices", "An Erdos-Renyi graph with 5000 vertices and edge probability 0.1", 100);
+    time_tree_count(H, root, col_H, G, col_G, filename, "A path on 2 vertices", "A star on 50000 vertices with central vertex colour 0 and all other vertices colour 1", 100);
 
     // int k = 100; //no. of executions
 

@@ -52,6 +52,29 @@ Graph star(int n) {
 
 
 /**
+ * @param n The number of vertices in the resulting tree
+ * @return the complete binary tree on n vertices, with vertex 0 as the root
+*/
+Graph binaryTree(int n) {
+    Graph tree(n);
+
+    for (int i = 0; i < n; ++i) {
+        int left = 2*i+1;
+        int right = 2*i+2;
+
+        if (left < n) {
+            boost::add_edge(i, left, tree);
+        }
+        if (right < n) {
+            boost::add_edge(i, right, tree);
+        }
+    }
+
+    return tree;
+}
+
+
+/**
  * @param n, the number of vertices in the graph
  * @param p, the probability of each edge existing in the graph (must be between 0 and 1 inclusive)
  * 

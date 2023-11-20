@@ -30,6 +30,8 @@ Graph star(int n);
 
 Graph clique(int n);
 
+Graph binaryTree(int n);
+
 Graph erdos_renyi(int n, double p);
 
 #endif
