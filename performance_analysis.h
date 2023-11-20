@@ -16,4 +16,6 @@ using ColourMap = associative_property_map<Colours>;
 
 void time_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, ColourMap colour_G, std::string outputFile, std::string describe_tree, std::string describe_G, int noRuns);
 
+void time_with_random_colouring(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, std::string outputFile, std::string describe_tree, std::string describe_G, int noRuns);
+
 #endif
