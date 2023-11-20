@@ -20,7 +20,7 @@ int main() {
     int root = 0;
     DiGraph H = makeRooted(GH, root);
 
-    Graph G = erdos_renyi(5000, 0.2);
+    Graph G = erdos_renyi(100, 0.2);
 
     Colours col_H;
 
@@ -57,9 +57,9 @@ int main() {
     std::string filename = "outputs/" + timeString;
 
 
-    time_tree_count(H, root, col_H, G, col_G, filename, "A path on 5 vertices", "An Erdos-Renyi graph with 5000 vertices and edge probability 0.2", 100);
+    time_tree_count(H, root, col_H, G, col_G, filename, "A path on 5 vertices", "An Erdos-Renyi graph with 100 vertices and edge probability 0.2", 100);
 
-    time_with_random_colouring(H, root, col_H, G, filename + "randCol", "A path on 5 vertices", "An Erdos-Renyi graph with 5000 vertices and edge probability 0.2", 100);
+    time_with_random_colouring(H, root, col_H, G, filename + "randCol", "A path on 5 vertices", "An Erdos-Renyi graph with 100 vertices and edge probability 0.2", 100);
 
     // int k = 100; //no. of executions
 

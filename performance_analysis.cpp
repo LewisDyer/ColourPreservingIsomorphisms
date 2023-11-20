@@ -38,13 +38,13 @@ void time_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, 
     file << noRuns << " executions:\n";
     for (int i=0; i < noRuns; i++) {
         auto start = std::chrono::high_resolution_clock::now();
-        int j = new_tree_count(tree, root, colour_tree, G, colour_G);
+        unsigned long long j = new_tree_count(tree, root, colour_tree, G, colour_G);
         auto end = std::chrono::high_resolution_clock::now(); 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
 
 
-        std::cout << duration.count() << "ms \n";
-        file << duration.count() << "ms \n";
+        std::cout << duration.count() << "ms," << j << "\n";
+        file << duration.count() << "ms," << j << "\n";
         total_runtime += duration.count();
     }
 
@@ -75,13 +75,13 @@ void time_with_random_colouring(DiGraph tree, Vertex root, ColourMap colour_tree
         
         ColourMap colour_G(col_G);
         auto start = std::chrono::high_resolution_clock::now();
-        int j = new_tree_count(tree, root, colour_tree, G, colour_G);
+        unsigned long long j = new_tree_count(tree, root, colour_tree, G, colour_G);
         auto end = std::chrono::high_resolution_clock::now(); 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
 
 
-        std::cout << duration.count() << "ms \n";
-        file << duration.count() << "ms \n";
+        std::cout << duration.count() << "ms," << j << "\n";
+        file << duration.count() << "ms," << j << "\n";
         total_runtime += duration.count();
     }
 

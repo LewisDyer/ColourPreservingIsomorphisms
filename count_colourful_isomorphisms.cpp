@@ -69,8 +69,8 @@ std::vector<int> getAllHeights(const DiGraph& tree, Vertex root) {
  * @param colour_G a property map defining a k-vertex colouring of G (not necessarily colourful)
  * @return The number of colour-preserving graph isomorphisms from tree to subgraphs of G.
 */
-int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, ColourMap colour_G) {
-    int total = 0;
+unsigned long long new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, ColourMap colour_G) {
+    unsigned long long total = 0;
     Colours cpi_count; //stores counts of partial solutions for all vertices in G
 
     typedef typename graph_traits<Graph>::vertex_iterator iter_v;
@@ -124,7 +124,7 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, Co
                     std::pair<DiGraph::out_edge_iterator, DiGraph::out_edge_iterator> outEdges = boost::out_edges(v, tree);
                     for (DiGraph::out_edge_iterator outEdge = outEdges.first; outEdge != outEdges.second; ++outEdge) {
                         Vertex c = boost::target(*outEdge, tree);
-                        int current_child = 0;
+                        unsigned long long current_child = 0;
 
                         //iterate through adjacent vertex to c in G
                         std::pair<Graph::adjacency_iterator, Graph::adjacency_iterator> neighbours = boost::adjacent_vertices(w, G);
@@ -140,8 +140,11 @@ int new_tree_count(DiGraph tree, Vertex root, ColourMap colour_tree, Graph G, Co
                         cpi_count[w] *= current_child;
                     }
 
+                    //std::cout << "cpi_count of " << w << " is " << cpi_count[w] << "\n";
+
                     if (i == v_height.size()-1) { //if on final iteration, i.e the root vertex
                         total += cpi_count[w]; //sum up all possible counts from the root vertex
+                        //std::cout << "added to final total\n";
                     }
                 }
 
