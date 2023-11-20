@@ -1,5 +1,6 @@
 
 # include <chrono>
+# include <ctime>
 # include "graph_utils.h"
 # include "graph_generators.h"
 # include "count_colourful_isomorphisms.h"
@@ -38,7 +39,24 @@ int main() {
 
     ColourMap colour_G(col_G);
 
-    time_tree_count(H, 1, col_H, G, col_G, "testTiming.txt", "A star graph on 4 vertices", "An Erdos-Renyi graph with 5000 vertices and edge probability 0.1", 100);
+    auto now = std::chrono::system_clock::now();
+
+    // Convert the time point to a time_t object
+    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+
+    // Convert the time_t object to a tm structure
+    std::tm* timeInfo = std::localtime(&currentTime);
+
+    // Format the date and time as a string in ISO 8601 format
+    std::ostringstream oss;
+    oss << std::put_time(timeInfo, "%Y-%m-%dT%H-%M-%S");
+
+    std::string timeString = oss.str();
+
+    std::string filename = "outputs/" + timeString;
+
+
+    time_tree_count(H, 1, col_H, G, col_G, filename, "A star graph on 4 vertices", "An Erdos-Renyi graph with 5000 vertices and edge probability 0.1", 100);
 
     // int k = 100; //no. of executions
 
